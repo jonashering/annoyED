@@ -14,6 +14,10 @@ plugins {
     id 'application'
 }
 
+version '1.0-SNAPSHOT'
+
+sourceCompatibility = 1.8
+
 repositories {
     // Use jcenter for resolving dependencies.
     // You can declare any Maven/Ivy/file repository here.
@@ -21,11 +25,13 @@ repositories {
 }
 
 dependencies {
-    // This dependency is used by the application.
+    // Application dependecies
     implementation 'com.google.guava:guava:28.0-jre'
+    implementation "org.apache.kafka:kafka-streams:2.3.1"
 
-    // Use JUnit test framework
+    // Test framework
     testImplementation 'junit:junit:4.12'
+    testImplementation "org.apache.kafka:kafka-streams-test-utils:2.3.1"
 }
 
 application {
