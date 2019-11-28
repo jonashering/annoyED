@@ -4,10 +4,10 @@
 package annoyED;
 
 import org.apache.kafka.clients.producer.ProducerRecord;
-import org.apache.kafka.common.serialization.LongDeserializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
-import org.apache.kafka.streams.StreamsBuilder;
+import org.apache.kafka.common.serialization.IntegerSerializer;
+import org.apache.kafka.streams.Topology;
 import org.apache.kafka.streams.TopologyTestDriver;
 import org.apache.kafka.streams.test.ConsumerRecordFactory;
 import org.apache.kafka.streams.test.OutputVerifier;
@@ -16,21 +16,22 @@ import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
-import static annoyED.App.*;
+
+import java.sql.Time;
 
 
 public class AppTest {
 
     private TopologyTestDriver testDriver;
     private StringDeserializer stringDeserializer = new StringDeserializer();
-    private LongDeserializer longDeserializer = new LongDeserializer();
-    private ConsumerRecordFactory<String, String> recordFactory = new ConsumerRecordFactory<>(new StringSerializer(), new StringSerializer());
+    private ConsumerRecordFactory<String, Integer> recordFactory = new ConsumerRecordFactory<String, Integer>(new StringSerializer(), new IntegerSerializer());
 
     @Before
     public void setup() {
-        final StreamsBuilder builder = new StreamsBuilder();
-        App.createNearestNeighborStream(builder);
-        testDriver = new TopologyTestDriver(builder.build(), App.getStreamsConfig());
+        App app = new App();
+        Topology topology = app.build();
+
+        testDriver = new TopologyTestDriver(topology, App.getStreamsConfig());
     }
 
     @After
@@ -44,15 +45,23 @@ public class AppTest {
 
     @Test
     public void testOneWord() {
-        testDriver.pipeInput(recordFactory.create(INPUT_TOPIC, null, "Hello"));
+        testDriver.pipeInput(recordFactory.create("source-topic", "Test-5", 5));
+        testDriver.pipeInput(recordFactory.create("source-topic", "Test-6", 6));
 
-        ProducerRecord<String, Long> outputRecord = testDriver.readOutput(
-                OUTPUT_TOPIC,
+        ProducerRecord<String, String> outputRecord = testDriver.readOutput(
+                "sink-topic",
                 stringDeserializer,
-                longDeserializer);
+                stringDeserializer);
 
-        OutputVerifier.compareKeyValue(outputRecord, "hello", 1L);
-        assertNull(testDriver.readOutput(OUTPUT_TOPIC, stringDeserializer, longDeserializer));
+        OutputVerifier.compareKeyValue(outputRecord, "Test-5", "Not found");
+        System.err.println(outputRecord.key());
+        System.err.println(outputRecord.value());
+        outputRecord = testDriver.readOutput(
+                "sink-topic",
+                stringDeserializer,
+                stringDeserializer);
+        OutputVerifier.compareKeyValue(outputRecord, "Test-6", "Test-5");
+        assertNull(testDriver.readOutput("sink-topic", stringDeserializer, stringDeserializer));
     }
 
 }
