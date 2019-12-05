@@ -17,6 +17,9 @@ import org.apache.kafka.streams.state.KeyValueStore;
 import org.apache.kafka.streams.state.StoreBuilder;
 import org.apache.kafka.streams.state.Stores;
 
+import annoyED.store.IndexStore;
+import annoyED.store.IndexStoreBuilder;
+
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.Properties;
@@ -57,15 +60,12 @@ public class App {
     public Topology build() {
 
         
-        StoreBuilder<KeyValueStore<String,Integer>> inputSB = Stores.keyValueStoreBuilder(Stores.inMemoryKeyValueStore("AllData"), Serdes.String(), Serdes.Integer());
-        StoreBuilder<KeyValueStore<String,String>> outputSB = Stores.keyValueStoreBuilder(Stores.inMemoryKeyValueStore("NearestNeighbor"), Serdes.String(), Serdes.String());
-        StringSerializer stringSerializer = new StringSerializer();
+        IndexStoreBuilder inputSB = new IndexStoreBuilder();
         Topology builder = new Topology();
         builder.addSource("Source", "source-topic")
             .addProcessor("Process", () -> new NeighborProcessor(), "Source")
             .addStateStore(inputSB, "Process")
-            .addStateStore(outputSB, "Process")
-            .addSink("Sink", "sink-topic", stringSerializer, stringSerializer, "Process");
+            .addSink("Sink", "sink-topic", "Process");
 
         return builder;
 
