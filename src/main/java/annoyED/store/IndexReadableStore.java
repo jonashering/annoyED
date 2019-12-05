@@ -1,6 +1,6 @@
 package annoyED.store;
 
-public interface IndexReadableStore  {
+public interface IndexReadableStore {
 
-  Integer read(String key);
+  Datapoint read(String key);
 }

@@ -4,8 +4,16 @@ import java.util.Map;
 import org.apache.kafka.streams.state.StoreBuilder;
 
 public class IndexStoreBuilder implements StoreBuilder<IndexStore> {
-    private String name = "AllData";
+    private String name = "";
+    private Integer numTrees = 0;
+    private Integer searchK = 0;
     private Map<String, String> config;
+
+    public IndexStoreBuilder(String name, Integer numTrees, Integer searchK) {
+        this.name = name;
+        this.numTrees = numTrees;
+        this.searchK = searchK;
+    }
 
     @Override
     public StoreBuilder<IndexStore> withCachingEnabled() {
@@ -30,7 +38,7 @@ public class IndexStoreBuilder implements StoreBuilder<IndexStore> {
 
     @Override
     public IndexStore build() {
-        return new IndexStore(this.name);
+        return new IndexStore(this.name, this.numTrees, this.searchK);
     }
 
     @Override

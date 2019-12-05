@@ -4,7 +4,7 @@ import org.apache.kafka.streams.processor.Processor;
 import org.apache.kafka.streams.processor.ProcessorContext;
 import annoyED.store.*;
 
-public class NeighborProcessor implements Processor<String, Integer> {
+public class NeighborProcessor implements Processor<String, Datapoint> {
 
     private ProcessorContext context;
     private IndexStore inputStore;
@@ -18,7 +18,7 @@ public class NeighborProcessor implements Processor<String, Integer> {
     }
 
     @Override
-    public void process(String name, Integer value) {
+    public void process(String name, Datapoint value) {
         this.inputStore.write(name, value);
 
         context.forward(name, this.inputStore.read(name));

@@ -4,15 +4,25 @@ import java.util.Vector;
 
 import org.apache.kafka.streams.processor.ProcessorContext;
 import org.apache.kafka.streams.processor.StateStore;
-import org.apache.kafka.common.serialization.Serdes;
+
+import annoyED.SerdesFactory;
+
+import org.apache.kafka.common.serialization.Serde;
 
 public class IndexStore implements StateStore, IndexWritableStore {
-    private final Vector<String> vector = new Vector<String>();
+    private Vector<IndexTree> trees = new Vector<IndexTree>();
     private String name;
+    private Integer searchK;
+    private Serde<Datapoint> dataSerdes;
     private boolean open = false;
 
-    public IndexStore(final String name) {
+    public IndexStore(final String name, final Integer numTrees, final Integer searchK) {
         this.name = name;
+        this.searchK = searchK;
+        for (int i = 0; i < numTrees; i++) {
+            this.trees.add(new IndexTree(this.searchK));
+        }
+
     }
 
     @Override
@@ -28,7 +38,7 @@ public class IndexStore implements StateStore, IndexWritableStore {
 
     @Override
     public void close() {
-        this.vector.clear();
+        this.trees.clear();
         this.open = false;
 
     }
@@ -46,9 +56,10 @@ public class IndexStore implements StateStore, IndexWritableStore {
     @Override
     public void init(ProcessorContext context, StateStore root) {
 
+        dataSerdes = SerdesFactory.from(Datapoint.class);
         context.register(root, (key, value) -> {
             String sKey = new String(key);
-            write(sKey, Serdes.Integer().deserializer().deserialize(sKey, value));
+            write(sKey, dataSerdes.deserializer().deserialize(sKey, value));
         });
         this.open = true;
 
@@ -56,17 +67,16 @@ public class IndexStore implements StateStore, IndexWritableStore {
 
 
     @Override
-    public Integer read(String key) {
-        return this.vector.indexOf(key);
+    public Datapoint read(String key) {
+        return null;
     }
 
     @Override
-    public void write(String key, Integer value) {
-        this.vector.add(key);
-
+    public void write(String key, Datapoint value) {
+        for (int i = 0; i < this.trees.size(); i++) {
+            this.trees.get(i).add(value);
+        }
     }
-
-
   }
 
   
