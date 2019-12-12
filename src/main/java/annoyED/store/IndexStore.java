@@ -1,11 +1,12 @@
 package annoyED.store;
 
+import java.util.HashSet;
 import java.util.Vector;
 
 import org.apache.kafka.streams.processor.ProcessorContext;
 import org.apache.kafka.streams.processor.StateStore;
 
-import annoyED.SerdesFactory;
+import annoyED.serdes.JsonPojoSerde;
 
 import org.apache.kafka.common.serialization.Serde;
 
@@ -56,7 +57,7 @@ public class IndexStore implements StateStore, IndexWritableStore {
     @Override
     public void init(ProcessorContext context, StateStore root) {
 
-        dataSerdes = SerdesFactory.from(Datapoint.class);
+        dataSerdes = new JsonPojoSerde<Datapoint>();
         context.register(root, (key, value) -> {
             String sKey = new String(key);
             write(sKey, dataSerdes.deserializer().deserialize(sKey, value));
@@ -67,8 +68,12 @@ public class IndexStore implements StateStore, IndexWritableStore {
 
 
     @Override
-    public Datapoint read(String key) {
-        return null;
+    public NearestNeighborCandidates read(Datapoint datapoint) {
+        HashSet<Datapoint> union = new HashSet<Datapoint>();
+        for (int i = 0; i < this.trees.size(); i++) {
+            union.addAll(this.trees.get(i).getNeighborCandidates(datapoint));
+        }
+        return new NearestNeighborCandidates(datapoint,union);
     }
 
     @Override

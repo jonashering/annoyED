@@ -4,7 +4,6 @@
 package annoyED;
 
 import org.apache.kafka.clients.producer.ProducerRecord;
-import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.apache.kafka.common.serialization.Deserializer;
 import org.apache.kafka.common.serialization.Serde;
@@ -16,7 +15,9 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import annoyED.serdes.SerdesFactory;
 import annoyED.store.Datapoint;
+import annoyED.store.NearestNeighborCandidates;
 
 import static org.junit.Assert.*;
 
@@ -27,8 +28,9 @@ import java.util.Vector;
 public class AppTest {
 
     private TopologyTestDriver testDriver;
-    private StringDeserializer stringDeserializer = new StringDeserializer();
     private Serde<Datapoint> dataSerdes = SerdesFactory.from(Datapoint.class);
+    private Serde<NearestNeighborCandidates> sinkValueSerde = SerdesFactory.from(NearestNeighborCandidates.class);
+    private Deserializer<NearestNeighborCandidates> hashsetDeserializer = sinkValueSerde.deserializer();
     private Deserializer<Datapoint> datapointDeserializer = dataSerdes.deserializer();
     private ConsumerRecordFactory<String, Datapoint> recordFactory = new ConsumerRecordFactory<String, Datapoint>(new StringSerializer(), dataSerdes.serializer());
 
@@ -53,22 +55,28 @@ public class AppTest {
     public void testOneWord() {
         Vector<Float> a = new Vector<Float>();
         a.add(1f);
+        Datapoint data_a = new Datapoint("Test-5", a);
         Vector<Float> c = new Vector<Float>();
         c.add(2f);
-        testDriver.pipeInput(recordFactory.create("source-topic", "Test-5", new Datapoint("Test-5", a)));
-        testDriver.pipeInput(recordFactory.create("source-topic", "Test-6", new Datapoint("Test-6", c)));
+        Datapoint data_c = new Datapoint("Test-6", c);
+        testDriver.pipeInput(recordFactory.create("source-topic", "Test-5", data_a));
+        testDriver.pipeInput(recordFactory.create("source-topic", "Test-6", data_c));
+        testDriver.pipeInput(recordFactory.create("source-topic", "Test-7", data_c));
+        testDriver.pipeInput(recordFactory.create("source-topic", "Test-8", data_c));
+        testDriver.pipeInput(recordFactory.create("source-topic", "Test-9", data_c));
+        testDriver.pipeInput(recordFactory.create("source-topic", "Test-10", data_c));
+        testDriver.pipeInput(recordFactory.create("source-topic", "Test-11", data_c));
 
-        ProducerRecord<String, Datapoint> outputRecord = testDriver.readOutput("sink-topic", stringDeserializer, datapointDeserializer);
+        ProducerRecord<Datapoint, NearestNeighborCandidates> outputRecord = testDriver.readOutput("sink-topic", datapointDeserializer, hashsetDeserializer);
 
-        OutputVerifier.compareKeyValue(outputRecord, "Test-5", null);
-        System.err.println(outputRecord.key());
-        System.err.println(outputRecord.value());
-        outputRecord = testDriver.readOutput(
-                "sink-topic",
-                stringDeserializer,
-                datapointDeserializer);
-        OutputVerifier.compareKeyValue(outputRecord, "Test-6", null);
-        assertNull(testDriver.readOutput("sink-topic", stringDeserializer, datapointDeserializer));
+        // OutputVerifier.compareKeyValue(outputRecord, "Test-5", data_a);
+        System.err.println(outputRecord.key().datapointID);
+        for (Datapoint d : outputRecord.value().candidates) {
+            System.err.println(d.datapointID);
+        }
+        outputRecord = testDriver.readOutput("sink-topic", datapointDeserializer, hashsetDeserializer);
+        // OutputVerifier.compareKeyValue(outputRecord, "Test-6", data_c);
+        //assertNull(testDriver.readOutput("sink-topic", datapointDeserializer, hashsetDeserializer));
     }
 
 }

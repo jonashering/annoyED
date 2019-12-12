@@ -4,21 +4,15 @@
 package annoyED;
 
 import org.apache.kafka.clients.consumer.ConsumerConfig;
-import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serdes;
-import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.StreamsConfig;
 import org.apache.kafka.streams.Topology;
-import org.apache.kafka.streams.kstream.KStream;
-import org.apache.kafka.streams.kstream.KTable;
-import org.apache.kafka.streams.kstream.Materialized;
-import org.apache.kafka.streams.kstream.Produced;
 
 import annoyED.store.Datapoint;
 import annoyED.store.IndexStoreBuilder;
+import annoyED.store.NearestNeighborCandidates;
+import annoyED.serdes.SerdesFactory;
 
-import java.util.Arrays;
-import java.util.Locale;
 import java.util.Properties;
 
 
@@ -32,9 +26,6 @@ public class App {
         props.put(StreamsConfig.APPLICATION_ID_CONFIG, "streams-nearestneighbor");
         props.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
         props.put(StreamsConfig.CACHE_MAX_BYTES_BUFFERING_CONFIG, 0);
-        props.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.String().getClass().getName());
-        Serde<Datapoint> dataSerdes = SerdesFactory.from(Datapoint.class);
-        props.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, dataSerdes.getClass());
 
         // setting offset reset to earliest so that we can re-run the demo code with the same pre-loaded data
         // Note: To re-run the demo, you need to use the offset reset tool:
@@ -47,13 +38,12 @@ public class App {
     public Topology build() {
 
         
-        IndexStoreBuilder inputSB = new IndexStoreBuilder("AllData",1, 2);
+        IndexStoreBuilder inputSB = new IndexStoreBuilder("AllData",1, 3);
         Topology builder = new Topology();
-        builder.addSource("Source", "source-topic")
+        builder.addSource("Source", Serdes.String().deserializer(), SerdesFactory.from(Datapoint.class).deserializer(), "source-topic")
             .addProcessor("Process", () -> new NeighborProcessor(), "Source")
             .addStateStore(inputSB, "Process")
-            .addSink("Sink", "sink-topic", "Process");
-
+            .addSink("Sink", "sink-topic", SerdesFactory.from(Datapoint.class).serializer(), SerdesFactory.from(NearestNeighborCandidates.class).serializer() , "Process");
         return builder;
 
 

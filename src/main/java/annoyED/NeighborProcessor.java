@@ -20,8 +20,7 @@ public class NeighborProcessor implements Processor<String, Datapoint> {
     @Override
     public void process(String name, Datapoint value) {
         this.inputStore.write(name, value);
-
-        context.forward(name, this.inputStore.read(name));
+        context.forward(value, this.inputStore.read(value));
         context.commit();
 
     }

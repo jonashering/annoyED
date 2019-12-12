@@ -24,8 +24,9 @@ class IndexNode {
         return (this.split != null);
     }
 
-    public void split() { // create split and move datapoints to leaf nodes
+    public void split(Datapoint d) { // create split and move datapoints to leaf nodes
         // TODO: create real random split
+        this.add(d);
         this.split = new IndexSplit(0f, null);
         this.leftChild = new IndexNode();
         this.rightChild = new IndexNode();
@@ -63,11 +64,10 @@ public class IndexTree {
 
     public void add(Datapoint d) {
         IndexNode current = this.navigateToLeaf(d);
-        if (current.size() <= this.searchK){
+        if (current.size() < this.searchK){
             current.add(d);
-        }
-        if (current.size() == this.searchK) {
-            current.split();
+        } else if (current.size() == this.searchK) {
+            current.split(d);
         } else {
             throw new Error("You should not end up here!");
         }
