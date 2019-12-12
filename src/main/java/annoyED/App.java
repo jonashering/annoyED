@@ -4,7 +4,14 @@
 package annoyED;
 
 import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.clients.consumer.ConsumerRecords;
+import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.clients.producer.ProducerConfig;
+import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.Serdes;
+import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.StreamsConfig;
 import org.apache.kafka.streams.Topology;
 
@@ -13,7 +20,10 @@ import annoyED.store.IndexStoreBuilder;
 import annoyED.store.NearestNeighborCandidates;
 import annoyED.serdes.SerdesFactory;
 
+import java.time.Duration;
+import java.util.Collections;
 import java.util.Properties;
+import java.util.Vector;
 
 
 public class App {
@@ -47,5 +57,43 @@ public class App {
         return builder;
 
 
+    }
+
+    public static void main(String[] args) {
+        App app = new App();
+        final  KafkaStreams streams = new KafkaStreams(app.build(), App.getStreamsConfig());
+        streams.cleanUp();
+        streams.start();
+
+        final Properties prodprops = new Properties();
+        prodprops.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
+        final KafkaProducer<String, Datapoint> prod = new KafkaProducer<>(prodprops, Serdes.String().serializer(), SerdesFactory.from(Datapoint.class).serializer());
+        for (int i = 0; i < 20; i++) {
+            String name = "Test-" + String.valueOf(i);
+            Datapoint d = new Datapoint(name, new Vector<Float>());
+            prod.send(new ProducerRecord<String,Datapoint>("source-topic", name, d));
+        }
+        prod.close();
+        
+        final Properties consprops = new Properties();
+        consprops.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
+        consprops.put(ConsumerConfig.GROUP_ID_CONFIG, "annoyyyyy");
+
+        final KafkaConsumer<Datapoint, NearestNeighborCandidates> cons = new KafkaConsumer<>(consprops, SerdesFactory.from(Datapoint.class).deserializer(), SerdesFactory.from(NearestNeighborCandidates.class).deserializer());
+        cons.subscribe(Collections.singleton("sink-topic"));
+
+        Runtime.getRuntime().addShutdownHook(new Thread(cons::close));
+        Runtime.getRuntime().addShutdownHook(new Thread(streams::close));
+
+        while (true) {
+            ConsumerRecords<Datapoint, NearestNeighborCandidates> crs = cons.poll(Duration.ofSeconds(10));
+            for (final ConsumerRecord<Datapoint, NearestNeighborCandidates> cr : crs) {
+                System.out.println(cr.key().datapointID);
+                for (Datapoint d : cr.value().candidates) { 
+                    System.out.print("-->");
+                    System.out.println(d.datapointID);
+                }
+            }
+        }
     }
 }
