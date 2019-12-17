@@ -1,5 +1,6 @@
 package annoyED.store;
 
+import java.util.Random;
 import java.util.Vector;
 
 class IndexNode {
@@ -7,6 +8,7 @@ class IndexNode {
     public Vector<Datapoint> data = null;
     public IndexNode leftChild = null;
     public IndexNode rightChild = null;
+    private Random random = new Random();
 
     public IndexNode() {
         this.data = new Vector<Datapoint>();
@@ -25,16 +27,18 @@ class IndexNode {
     }
 
     public void split(Datapoint d) { // create split and move datapoints to leaf nodes
-        // TODO: create real random split
         this.add(d);
-        this.split = new IndexSplit(0f, null);
+        Datapoint a = this.data.get(this.random.nextInt(this.size()));
+        Datapoint b = this.data.get(this.random.nextInt(this.size()));
+        this.split = new IndexSplit(a, b);
         this.leftChild = new IndexNode();
         this.rightChild = new IndexNode();
         for (int i = 0; i < this.size(); i++) {
-            if (i % 2 == 0){
-                this.leftChild.data.add(this.data.get(i));
+            Datapoint c = this.data.get(i);
+            if (this.split.sideOfSplit(c) <= 0){
+                this.leftChild.data.add(c);
             } else {
-                this.rightChild.data.add(this.data.get(i));
+                this.rightChild.data.add(c);
             }
         }
         this.data = null;
