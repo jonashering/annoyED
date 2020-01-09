@@ -23,7 +23,7 @@ public class IndexSplit {
             for (int i = 0; i < a.vector.size(); i++) {
                 Float diff = b.vector.get(i) - a.vector.get(i);
                 n.add(diff);
-                x.add(b.vector.get(i) + a.vector.get(i) / 2);
+                x.add((b.vector.get(i) + a.vector.get(i)) / 2);
                 len += diff;
             }
             for (int i = 0; i < n.size(); i++) {
