@@ -77,6 +77,11 @@ public class IndexStore implements StateStore, IndexWritableStore {
     }
 
     @Override
+    public Vector<IndexTree> trees() {
+        return this.trees;
+    }
+
+    @Override
     public void write(String key, Datapoint value) {
         for (int i = 0; i < this.trees.size(); i++) {
             this.trees.get(i).add(value);

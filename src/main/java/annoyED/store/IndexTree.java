@@ -47,12 +47,16 @@ class IndexNode {
 }
 
 public class IndexTree {
-    private IndexNode head;
-    private Integer searchK;
+    public IndexNode head;
+    public Integer searchK;
 
     public IndexTree(Integer searchK) {
         this.head = new IndexNode();
         this.searchK = searchK;
+    }
+
+    public IndexTree() {
+        this(5);
     }
 
     private IndexNode navigateToLeaf(Datapoint d) {
