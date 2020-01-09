@@ -28,8 +28,9 @@ class IndexNode {
 
     public void split(Datapoint d) { // create split and move datapoints to leaf nodes
         this.add(d);
-        Datapoint a = this.data.get(this.random.nextInt(this.size()));
-        Datapoint b = this.data.get(this.random.nextInt(this.size()));
+        Integer index = this.random.nextInt(this.size() - 1);
+        Datapoint a = this.data.get(index);
+        Datapoint b = this.data.get(index+1);
         this.split = new IndexSplit(a, b);
         this.leftChild = new IndexNode();
         this.rightChild = new IndexNode();
@@ -73,7 +74,8 @@ public class IndexTree {
         } else if (current.size() == this.searchK) {
             current.split(d);
         } else {
-            throw new Error("You should not end up here!");
+            current.split(d);
+            System.err.println("We're growing too big");
         }
     }
 

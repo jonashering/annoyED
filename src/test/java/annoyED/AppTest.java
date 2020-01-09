@@ -10,7 +10,6 @@ import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.streams.Topology;
 import org.apache.kafka.streams.TopologyTestDriver;
 import org.apache.kafka.streams.test.ConsumerRecordFactory;
-import org.apache.kafka.streams.test.OutputVerifier;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -18,8 +17,6 @@ import org.junit.Test;
 import annoyED.serdes.SerdesFactory;
 import annoyED.store.Datapoint;
 import annoyED.store.NearestNeighborCandidates;
-
-import static org.junit.Assert.*;
 
 import java.util.Vector;
 
@@ -53,26 +50,36 @@ public class AppTest {
 
     @Test
     public void testOneWord() {
-        Vector<Float> a = new Vector<Float>();
-        a.add(1f);
+        Vector<Double> a = new Vector<Double>();
+        a.add(1d);
+        a.add(1d);
         Datapoint data_a = new Datapoint("Test-5", a);
-        Vector<Float> c = new Vector<Float>();
-        c.add(2f);
+        Vector<Double> b = new Vector<Double>();
+        b.add(5d);
+        b.add(5d);
+        Datapoint data_b = new Datapoint("Test-7", b);
+        Vector<Double> c = new Vector<Double>();
+        c.add(2d);
+        c.add(2d);
         Datapoint data_c = new Datapoint("Test-6", c);
+        Vector<Double> d = new Vector<Double>();
+        d.add(7d);
+        d.add(7d);
+        Datapoint data_d= new Datapoint("Test-8", d);
         testDriver.pipeInput(recordFactory.create("source-topic", "Test-5", data_a));
         testDriver.pipeInput(recordFactory.create("source-topic", "Test-6", data_c));
-        testDriver.pipeInput(recordFactory.create("source-topic", "Test-7", data_c));
-        testDriver.pipeInput(recordFactory.create("source-topic", "Test-8", data_c));
-        testDriver.pipeInput(recordFactory.create("source-topic", "Test-9", data_c));
+        testDriver.pipeInput(recordFactory.create("source-topic", "Test-7", data_b));
+        testDriver.pipeInput(recordFactory.create("source-topic", "Test-8", data_d));
+        testDriver.pipeInput(recordFactory.create("source-topic", "Test-9", data_b));
         testDriver.pipeInput(recordFactory.create("source-topic", "Test-10", data_c));
-        testDriver.pipeInput(recordFactory.create("source-topic", "Test-11", data_c));
+        testDriver.pipeInput(recordFactory.create("source-topic", "Test-11", data_a));
 
         ProducerRecord<Datapoint, NearestNeighborCandidates> outputRecord = testDriver.readOutput("sink-topic", datapointDeserializer, hashsetDeserializer);
 
         // OutputVerifier.compareKeyValue(outputRecord, "Test-5", data_a);
         System.err.println(outputRecord.key().datapointID);
-        for (Datapoint d : outputRecord.value().candidates) {
-            System.err.println(d.datapointID);
+        for (Datapoint dp : outputRecord.value().candidates) {
+            System.err.println(dp.datapointID);
         }
         outputRecord = testDriver.readOutput("sink-topic", datapointDeserializer, hashsetDeserializer);
         // OutputVerifier.compareKeyValue(outputRecord, "Test-6", data_c);

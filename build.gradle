@@ -28,6 +28,7 @@ dependencies {
     // Application dependecies
     implementation 'com.google.guava:guava:28.0-jre'
     implementation "org.apache.kafka:kafka-streams:2.3.1"
+    implementation "com.sun.net.httpserver:http:20070405"
 
     // Test framework
     testImplementation 'junit:junit:4.12'

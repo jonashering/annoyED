@@ -4,96 +4,74 @@
 package annoyED;
 
 import org.apache.kafka.clients.consumer.ConsumerConfig;
-import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.apache.kafka.clients.consumer.ConsumerRecords;
-import org.apache.kafka.clients.consumer.KafkaConsumer;
-import org.apache.kafka.clients.producer.KafkaProducer;
-import org.apache.kafka.clients.producer.ProducerConfig;
-import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.StreamsConfig;
 import org.apache.kafka.streams.Topology;
+import org.apache.kafka.streams.state.HostInfo;
 
 import annoyED.store.Datapoint;
 import annoyED.store.IndexStoreBuilder;
 import annoyED.store.NearestNeighborCandidates;
 import annoyED.serdes.SerdesFactory;
 
-import java.time.Duration;
-import java.util.Collections;
 import java.util.Properties;
-import java.util.Vector;
-
 
 public class App {
-    public static final String INPUT_TOPIC = "streams-point-input";
-    public static final String OUTPUT_TOPIC = "streams-nearestneighbor-output";
-    public static final String STORE_NAME = "CountsKeyValueStore";
+    static final String DEFAULT_HOST = "localhost";
+    static final Integer port = 5000;
 
     static Properties getStreamsConfig() {
         final Properties props = new Properties();
         props.put(StreamsConfig.APPLICATION_ID_CONFIG, "streams-nearestneighbor");
         props.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
         props.put(StreamsConfig.CACHE_MAX_BYTES_BUFFERING_CONFIG, 0);
-
-        // setting offset reset to earliest so that we can re-run the demo code with the same pre-loaded data
+        props.put(StreamsConfig.APPLICATION_SERVER_CONFIG, DEFAULT_HOST + ":" + port);
+        // setting offset reset to earliest so that we can re-run the demo code with the
+        // same pre-loaded data
         // Note: To re-run the demo, you need to use the offset reset tool:
         // https://cwiki.apache.org/confluence/display/KAFKA/Kafka+Streams+Application+Reset+Tool
         props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
         return props;
     }
 
-
     public Topology build() {
 
-        
-        IndexStoreBuilder inputSB = new IndexStoreBuilder("AllData",1, 3);
+        IndexStoreBuilder inputSB = new IndexStoreBuilder("AllData", 1, 10);
         Topology builder = new Topology();
-        builder.addSource("Source", Serdes.String().deserializer(), SerdesFactory.from(Datapoint.class).deserializer(), "source-topic")
-            .addProcessor("Process", () -> new NeighborProcessor(), "Source")
-            .addStateStore(inputSB, "Process")
-            .addSink("Sink", "sink-topic", SerdesFactory.from(Datapoint.class).serializer(), SerdesFactory.from(NearestNeighborCandidates.class).serializer() , "Process");
+        builder.addSource("Source", Serdes.String().deserializer(), SerdesFactory.from(Datapoint.class).deserializer(),
+                "source-topic").addProcessor("Process", () -> new NeighborProcessor(), "Source")
+                .addStateStore(inputSB, "Process").addSink("Sink", "sink-topic",
+                        SerdesFactory.from(Datapoint.class).serializer(),
+                        SerdesFactory.from(NearestNeighborCandidates.class).serializer(), "Process");
         return builder;
-
 
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         App app = new App();
-        final  KafkaStreams streams = new KafkaStreams(app.build(), App.getStreamsConfig());
+        final KafkaStreams streams = new KafkaStreams(app.build(), App.getStreamsConfig());
         streams.cleanUp();
         streams.start();
 
-        final Properties prodprops = new Properties();
-        prodprops.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
-        final KafkaProducer<String, Datapoint> prod = new KafkaProducer<>(prodprops, Serdes.String().serializer(), SerdesFactory.from(Datapoint.class).serializer());
-        for (int i = 0; i < 20; i++) {
-            String name = "Test-" + String.valueOf(i);
-            Datapoint d = new Datapoint(name, new Vector<Float>());
-            prod.send(new ProducerRecord<String,Datapoint>("source-topic", name, d));
-        }
-        prod.close();
-        
-        final Properties consprops = new Properties();
-        consprops.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
-        consprops.put(ConsumerConfig.GROUP_ID_CONFIG, "annoyyyyy");
-
-        final KafkaConsumer<Datapoint, NearestNeighborCandidates> cons = new KafkaConsumer<>(consprops, SerdesFactory.from(Datapoint.class).deserializer(), SerdesFactory.from(NearestNeighborCandidates.class).deserializer());
-        cons.subscribe(Collections.singleton("sink-topic"));
-
-        Runtime.getRuntime().addShutdownHook(new Thread(cons::close));
+        final RestService restService = startRestProxy(streams, DEFAULT_HOST, port);
         Runtime.getRuntime().addShutdownHook(new Thread(streams::close));
-
-        while (true) {
-            ConsumerRecords<Datapoint, NearestNeighborCandidates> crs = cons.poll(Duration.ofSeconds(10));
-            for (final ConsumerRecord<Datapoint, NearestNeighborCandidates> cr : crs) {
-                System.out.println(cr.key().datapointID);
-                for (Datapoint d : cr.value().candidates) { 
-                    System.out.print("-->");
-                    System.out.println(d.datapointID);
-                }
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            try {
+                restService.stop();
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-        }
+        }));
     }
+
+    static RestService startRestProxy(final KafkaStreams streams,
+                                                               final String host,
+                                                               final int port) throws Exception {
+        final HostInfo hostInfo = new HostInfo(host, port);
+        final RestService restService = new RestService(streams, hostInfo);
+        restService.start(port);
+        return restService;
+  }
+
 }
