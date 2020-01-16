@@ -32,7 +32,7 @@ import com.sun.net.httpserver.HttpServer;
     void start(final int port) throws Exception {
       server = HttpServer.create(new InetSocketAddress(port), 0);
       System.out.println("server started at " + port);
-      server.createContext("/test", new TestHandler(streams));
+      server.createContext("/query", new TestHandler(streams));
       server.createContext("/trees", new TreeHandler(streams));
       server.setExecutor(null);
       server.start();
