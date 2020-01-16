@@ -24,7 +24,7 @@ public class IndexSplit {
                 Double diff = b.vector.get(i) - a.vector.get(i);
                 n.add(diff);
                 x.add((b.vector.get(i) + a.vector.get(i)) / 2);
-                len += diff;
+                len += Math.pow(diff, 2);
             }
             for (int i = 0; i < n.size(); i++) {
                 this.unitVector.add(n.get(i) / Math.sqrt(len));
