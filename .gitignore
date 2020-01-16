@@ -16,3 +16,4 @@ gradle-app.setting
 # User-specific stuff
 .idea
 .vscode
+bin/
