@@ -73,6 +73,7 @@ public class IndexStore implements StateStore, IndexWritableStore {
         for (int i = 0; i < this.trees.size(); i++) {
             union.addAll(this.trees.get(i).getNeighborCandidates(datapoint));
         }
+        union.remove(datapoint);
         return new NearestNeighborCandidates(datapoint,union);
     }
 

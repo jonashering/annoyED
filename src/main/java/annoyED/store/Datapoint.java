@@ -7,12 +7,32 @@ public class Datapoint {
 
   public String datapointID;
   public Vector<Double> vector;
+  public Boolean readOnly = false;
+  public boolean write;
 
   public Datapoint() {
-    this("", new Vector<Double>());
+    this("", new Vector<Double>(), false, true);
   }
+  public Datapoint(String datapointId, Vector<Double> vector, Boolean readOnly, Boolean write) {
+    this.datapointID = datapointId;
+    this.vector = vector;
+    this.readOnly = readOnly;
+    this.write = write;
+  }
+
   public Datapoint(String datapointId, Vector<Double> vector) {
     this.datapointID = datapointId;
     this.vector = vector;
+    this.readOnly = false;
+    this.write = true;
+  }
+
+  public Double distTo(Datapoint e) {
+    Double dist = 0d;
+    for (int i = 0; i < this.vector.size(); i++) {
+      dist += Math.pow(this.vector.get(i) - e.vector.get(i), 2);
+    }
+
+    return Math.sqrt(dist);
   }
 }
