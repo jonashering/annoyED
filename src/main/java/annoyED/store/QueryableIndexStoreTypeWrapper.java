@@ -38,4 +38,11 @@ public class QueryableIndexStoreTypeWrapper implements IndexReadableStore {
         final List<IndexReadableStore> stores = provider.stores(storeName, customStoreType);
         return stores.get(0).trees();
     }
+
+    @Override
+    public void setParameters(int numTrees, int searchK) {
+        final List<IndexReadableStore> stores = provider.stores(storeName, customStoreType);
+        stores.get(0).setParameters(numTrees, searchK);
+
+    }
 }

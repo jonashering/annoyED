@@ -88,6 +88,15 @@ public class IndexStore implements StateStore, IndexWritableStore {
             this.trees.get(i).add(value);
         }
     }
+
+    @Override
+    public void setParameters(int numTrees, int searchK) {
+        this.searchK = searchK;
+        this.trees = new Vector<IndexTree>();
+        for (int i = 0; i < numTrees; i++) {
+            this.trees.add(new IndexTree(this.searchK));
+        }
+    }
   }
 
   

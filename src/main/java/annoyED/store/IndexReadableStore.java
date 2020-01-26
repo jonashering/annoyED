@@ -6,4 +6,5 @@ public interface IndexReadableStore {
 
   NearestNeighborCandidates read(Datapoint datapoint);
   Vector<IndexTree> trees();
+  void setParameters(int numTrees, int searchK);
 }
