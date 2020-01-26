@@ -7,23 +7,23 @@ public class Datapoint {
 
   public String datapointID;
   public Vector<Double> vector;
-  public Boolean readOnly = false;
+  public Boolean persist = false;
   public boolean write;
 
   public Datapoint() {
     this("", new Vector<Double>(), false, true);
   }
-  public Datapoint(String datapointId, Vector<Double> vector, Boolean readOnly, Boolean write) {
+  public Datapoint(String datapointId, Vector<Double> vector, Boolean persist, Boolean write) {
     this.datapointID = datapointId;
     this.vector = vector;
-    this.readOnly = readOnly;
+    this.persist = persist;
     this.write = write;
   }
 
   public Datapoint(String datapointId, Vector<Double> vector) {
     this.datapointID = datapointId;
     this.vector = vector;
-    this.readOnly = false;
+    this.persist = false;
     this.write = true;
   }
 

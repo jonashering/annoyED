@@ -19,7 +19,7 @@ public class NeighborProcessor implements Processor<String, Datapoint> {
 
     @Override
     public void process(String name, Datapoint value) {
-        if (! value.readOnly) {
+        if (! value.persist) {
             this.inputStore.write(name, value);
         }
         if ( value.write) {
