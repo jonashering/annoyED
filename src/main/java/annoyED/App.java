@@ -15,6 +15,7 @@ import annoyED.store.IndexStoreBuilder;
 import annoyED.store.NearestNeighborCandidates;
 import annoyED.serdes.SerdesFactory;
 
+import java.util.Optional;
 import java.util.Properties;
 
 public class App {
@@ -24,7 +25,9 @@ public class App {
     static Properties getStreamsConfig() {
         final Properties props = new Properties();
         props.put(StreamsConfig.APPLICATION_ID_CONFIG, "streams-nearestneighbor");
-        props.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
+        props.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, 
+        Optional.ofNullable(System.getenv("BOOTSTRAP_SERVERS_CONFIG")).orElse("localhost:9092")
+        );
         props.put(StreamsConfig.CACHE_MAX_BYTES_BUFFERING_CONFIG, 0);
         props.put(StreamsConfig.APPLICATION_SERVER_CONFIG, DEFAULT_HOST + ":" + port);
         // setting offset reset to earliest so that we can re-run the demo code with the
