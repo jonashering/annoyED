@@ -45,7 +45,7 @@ public class NearestNeighborApp {
 
     public static void main(String[] args) throws Exception {
         final Properties props = getStreamsConfig();
-        final int k = 5;
+        final int k = 100;
         final StreamsBuilder builder = new StreamsBuilder();
         createNNStream(builder, k);
         final KafkaStreams streams = new KafkaStreams(builder.build(), props);

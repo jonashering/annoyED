@@ -1,21 +1,22 @@
 package annoyED.store;
 
+import java.util.ArrayList;
 import java.util.Random;
 import java.util.Vector;
 
 class IndexNode {
     public IndexSplit split = null;
-    public Vector<Datapoint> data = null;
+    public Vector<Integer> data = null;
     public IndexNode leftChild = null;
     public IndexNode rightChild = null;
     private Random random = new Random();
 
     public IndexNode() {
-        this.data = new Vector<Datapoint>();
+        this.data = new Vector<Integer>();
     }
 
-    public void add(Datapoint d){
-        this.data.add(d);
+    public void add(int position){
+        this.data.add(position);
     }
 
     public Integer size() {
@@ -26,17 +27,17 @@ class IndexNode {
         return (this.split != null);
     }
 
-    public void split(Datapoint d) { // create split and move datapoints to leaf nodes
-        this.add(d);
+    public void split(int dp, ArrayList<Datapoint> d) { // create split and move datapoints to leaf nodes
+        this.add(dp);
         Integer index = this.random.nextInt(this.size() - 1);
-        Datapoint a = this.data.get(index);
-        Datapoint b = this.data.get(index+1);
-        this.split = new IndexSplit(a, b);
+        Integer a = this.data.get(index);
+        Integer b = this.data.get(index+1);
+        this.split = new IndexSplit(d.get(a), d.get(b));
         this.leftChild = new IndexNode();
         this.rightChild = new IndexNode();
         for (int i = 0; i < this.size(); i++) {
-            Datapoint c = this.data.get(i);
-            if (this.split.sideOfSplit(c) <= 0){
+            Integer c = this.data.get(i);
+            if (this.split.sideOfSplit(d.get(c)) <= 0){
                 this.leftChild.data.add(c);
             } else {
                 this.rightChild.data.add(c);
@@ -71,19 +72,19 @@ public class IndexTree {
         return current;
     }
 
-    public void add(Datapoint d) {
+    public void add(Datapoint d, int position, ArrayList<Datapoint> data) {
         IndexNode current = this.navigateToLeaf(d);
         if (current.size() < this.searchK){
-            current.add(d);
+            current.add(position);
         } else if (current.size() == this.searchK) {
-            current.split(d);
+            current.split(position, data);
         } else {
-            current.split(d);
+            current.split(position, data);
             System.err.println("We're growing too big");
         }
     }
 
-    public Vector<Datapoint> getNeighborCandidates(Datapoint d) {
+    public Vector<Integer> getNeighborCandidates(Datapoint d) {
         IndexNode current = this.navigateToLeaf(d);
         return current.data;
     }
