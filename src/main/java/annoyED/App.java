@@ -12,7 +12,7 @@ import org.apache.kafka.streams.state.HostInfo;
 
 import annoyED.store.Datapoint;
 import annoyED.store.IndexStoreBuilder;
-import annoyED.store.NearestNeighborCandidates;
+import annoyED.store.NearestNeighbors;
 import annoyED.serdes.SerdesFactory;
 
 import java.util.Optional;
@@ -46,7 +46,7 @@ public class App {
                 "source-topic").addProcessor("Process", () -> new NeighborProcessor(), "Source")
                 .addStateStore(inputSB, "Process").addSink("Sink", "sink-topic",
                         SerdesFactory.from(Datapoint.class).serializer(),
-                        SerdesFactory.from(NearestNeighborCandidates.class).serializer(), "Process");
+                        SerdesFactory.from(NearestNeighbors.class).serializer(), "Process");
         return builder;
 
     }

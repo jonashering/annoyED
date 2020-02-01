@@ -1,7 +1,9 @@
 package annoyED.store;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Vector;
 
 import org.apache.kafka.streams.processor.ProcessorContext;
@@ -13,7 +15,7 @@ import org.apache.kafka.common.serialization.Serde;
 
 public class IndexStore implements StateStore, IndexWritableStore {
     private Vector<IndexTree> trees = new Vector<IndexTree>();
-    private ArrayList<Datapoint> data;
+    private HashMap<Integer,Datapoint> data;
     private String name;
     private Integer searchK;
     private Serde<Datapoint> dataSerdes;
@@ -22,7 +24,7 @@ public class IndexStore implements StateStore, IndexWritableStore {
     public IndexStore(final String name, final Integer numTrees, final Integer searchK) {
         this.name = name;
         this.searchK = searchK;
-        this.data = new ArrayList<Datapoint>(10000);
+        this.data = new HashMap<Integer,Datapoint>(100000);
         for (int i = 0; i < numTrees; i++) {
             this.trees.add(new IndexTree(this.searchK));
         }
@@ -71,17 +73,17 @@ public class IndexStore implements StateStore, IndexWritableStore {
 
 
     @Override
-    public NearestNeighborCandidates read(Datapoint datapoint) {
+    public NearestNeighbors read(Datapoint datapoint) {
         HashSet<Integer> union = new HashSet<Integer>();
         for (int i = 0; i < this.trees.size(); i++) {
             union.addAll(this.trees.get(i).getNeighborCandidates(datapoint));
         }
-        HashSet<Datapoint> dps = new HashSet<Datapoint>(union.size());
-        for (int i : union) {
-            dps.add(this.data.get(i));
-        }
-        dps.remove(datapoint);
-        return new NearestNeighborCandidates(datapoint,dps);
+        DatapointComparator comp = new DatapointComparator(datapoint, this.data);
+        List<Integer> dps = new ArrayList<Integer>(union);
+        dps.sort(comp);
+        dps.subList(0, Math.min(dps.size(),15));
+
+        return new NearestNeighbors(dps);
     }
 
     @Override
@@ -91,8 +93,9 @@ public class IndexStore implements StateStore, IndexWritableStore {
 
     @Override
     public void write(String key, Datapoint value) {
-        int position = data.size();
-        data.add(value);
+        int position = Integer.parseInt(key);
+        System.out.println(position);
+        data.put(Integer.parseInt(key), value);
         for (int i = 0; i < this.trees.size(); i++) {
             this.trees.get(i).add(value, position, data);
         }
@@ -101,7 +104,7 @@ public class IndexStore implements StateStore, IndexWritableStore {
     @Override
     public void setParameters(int numTrees, int searchK, int size) {
         this.searchK = searchK;
-        this.data = new ArrayList<Datapoint>(size);
+        this.data = new HashMap<Integer,Datapoint>(size);
         this.trees = new Vector<IndexTree>(numTrees);
         for (int i = 0; i < numTrees; i++) {
             this.trees.add(new IndexTree(this.searchK));

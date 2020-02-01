@@ -78,8 +78,8 @@ public class AppTest {
 
         // OutputVerifier.compareKeyValue(outputRecord, "Test-5", data_a);
         System.err.println(outputRecord.key().datapointID);
-        for (Datapoint dp : outputRecord.value().candidates) {
-            System.err.println(dp.datapointID);
+        for (Integer dp : outputRecord.value().candidates) {
+            System.err.println(dp);
         }
         outputRecord = testDriver.readOutput("sink-topic", datapointDeserializer, hashsetDeserializer);
         // OutputVerifier.compareKeyValue(outputRecord, "Test-6", data_c);

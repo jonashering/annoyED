@@ -4,7 +4,7 @@ import java.util.Vector;
 
 public interface IndexReadableStore {
 
-  NearestNeighborCandidates read(Datapoint datapoint);
+  NearestNeighbors read(Datapoint datapoint);
   Vector<IndexTree> trees();
   void setParameters(int numTrees, int searchK, int size);
 }

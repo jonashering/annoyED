@@ -13,7 +13,7 @@ import annoyED.serdes.JsonPOJODeserializer;
 import annoyED.serdes.JsonPOJOSerializer;
 import annoyED.store.Datapoint;
 import annoyED.store.IndexReadableStore;
-import annoyED.store.NearestNeighborCandidates;
+import annoyED.store.NearestNeighbors;
 import annoyED.store.QueryableIndexStoreType;
 
 import com.sun.net.httpserver.HttpExchange;
@@ -48,8 +48,8 @@ public class TestHandler implements HttpHandler {
         Datapoint d = des.deserialize("source-topic", query.getBytes());
         System.out.println(d.datapointID);
         final IndexReadableStore store = streams.store("AllData", new QueryableIndexStoreType());
-        NearestNeighborCandidates nc = store.read(d);
-        JsonPOJOSerializer<NearestNeighborCandidates> ser = new JsonPOJOSerializer<NearestNeighborCandidates>();
+        NearestNeighbors nc = store.read(d);
+        JsonPOJOSerializer<NearestNeighbors> ser = new JsonPOJOSerializer<NearestNeighbors>();
         byte[] response = ser.serialize("sink-topic", nc);
         ser.close();
         des.close();

@@ -19,12 +19,12 @@ public class QueryableIndexStoreTypeWrapper implements IndexReadableStore {
     }
 
     @Override
-    public NearestNeighborCandidates read(final Datapoint datapoint) {
+    public NearestNeighbors read(final Datapoint datapoint) {
 
         final List<IndexReadableStore> stores = provider.stores(storeName, customStoreType);
     // Try and find the value for the given key
         final IndexReadableStore rightStore = stores.stream().filter(store -> store.read(datapoint) != null).findFirst().orElse(null);
-        NearestNeighborCandidates candidates = new NearestNeighborCandidates();
+        NearestNeighbors candidates = new NearestNeighbors();
         if (rightStore != null) {
             candidates = rightStore.read(datapoint);
         }

@@ -6,14 +6,14 @@ public class NearestNeighborCandidates {
 
 
   public Datapoint searchPoint;
-  public HashSet<Datapoint> candidates;
+  public HashSet<Integer> candidates;
 
-  public NearestNeighborCandidates(Datapoint sP, HashSet<Datapoint> c) {
+  public NearestNeighborCandidates(Datapoint sP, HashSet<Integer> c) {
     this.searchPoint = sP;
     this.candidates = c;
   }
 
   public NearestNeighborCandidates() {
-    this(new Datapoint(), new HashSet<Datapoint>());
+    this(new Datapoint(), new HashSet<Integer>());
   }
 }

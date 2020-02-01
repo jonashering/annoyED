@@ -1,6 +1,6 @@
 package annoyED.store;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Random;
 import java.util.Vector;
 
@@ -27,11 +27,15 @@ class IndexNode {
         return (this.split != null);
     }
 
-    public void split(int dp, ArrayList<Datapoint> d) { // create split and move datapoints to leaf nodes
+    public void split(int dp, HashMap<Integer,Datapoint> d) { // create split and move datapoints to leaf nodes
         this.add(dp);
-        Integer index = this.random.nextInt(this.size() - 1);
-        Integer a = this.data.get(index);
-        Integer b = this.data.get(index+1);
+        Integer index1 = this.random.nextInt(this.size());
+        Integer index2 = this.random.nextInt(this.size());
+        while (index1 == index2) {
+            index2 = this.random.nextInt(this.size());  
+        }
+        Integer a = this.data.get(index1);
+        Integer b = this.data.get(index2);
         this.split = new IndexSplit(d.get(a), d.get(b));
         this.leftChild = new IndexNode();
         this.rightChild = new IndexNode();
@@ -72,7 +76,7 @@ public class IndexTree {
         return current;
     }
 
-    public void add(Datapoint d, int position, ArrayList<Datapoint> data) {
+    public void add(Datapoint d, int position, HashMap<Integer,Datapoint> data) {
         IndexNode current = this.navigateToLeaf(d);
         if (current.size() < this.searchK){
             current.add(position);

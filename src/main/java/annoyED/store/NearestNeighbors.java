@@ -4,14 +4,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class NearestNeighbors {
-    public List<Datapoint> list;
+    public List<Integer> list;
 
 
     public NearestNeighbors() {
-        this.list = new ArrayList<Datapoint>();
+        this.list = new ArrayList<Integer>();
     }
 
-    public NearestNeighbors(List<Datapoint> list) {
+    public NearestNeighbors(List<Integer> list) {
         this.list = list;
     }
 }

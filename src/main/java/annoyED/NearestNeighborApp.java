@@ -1,7 +1,4 @@
 package annoyED;
-
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
@@ -10,15 +7,6 @@ import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.StreamsConfig;
-import org.apache.kafka.streams.kstream.Consumed;
-import org.apache.kafka.streams.kstream.KStream;
-import org.apache.kafka.streams.kstream.Produced;
-
-import annoyED.serdes.SerdesFactory;
-import annoyED.store.Datapoint;
-import annoyED.store.DatapointComparator;
-import annoyED.store.NearestNeighborCandidates;
-import annoyED.store.NearestNeighbors;
 
 public class NearestNeighborApp {
 
@@ -32,22 +20,22 @@ public class NearestNeighborApp {
         return props;
     }
 
-    static void createNNStream(final StreamsBuilder builder, final int k) {
-        final KStream<Datapoint, NearestNeighborCandidates> stream = builder.stream("sink-topic", Consumed.with(SerdesFactory.from(Datapoint.class, true), SerdesFactory.from(NearestNeighborCandidates.class, false)));
-        stream.mapValues((candidates) -> {
-            List<Datapoint> sortedList = new ArrayList<>(candidates.candidates);
-            DatapointComparator comp = new DatapointComparator(candidates.searchPoint);
-            sortedList.sort(comp);
-            NearestNeighbors nn = new NearestNeighbors(sortedList);
-            return nn;
-        }).to("nn-topic", Produced.with(SerdesFactory.from(Datapoint.class, true), SerdesFactory.from(NearestNeighbors.class, false)));;
-    }
+    // static void createNNStream(final StreamsBuilder builder, final int k) {
+    //     final KStream<Datapoint, NearestNeighborCandidates> stream = builder.stream("sink-topic", Consumed.with(SerdesFactory.from(Datapoint.class, true), SerdesFactory.from(NearestNeighborCandidates.class, false)));
+    //     stream.mapValues((candidates) -> {
+    //         List<Datapoint> sortedList = new ArrayList<>(candidates.candidates);
+    //         DatapointComparator comp = new DatapointComparator(candidates.searchPoint);
+    //         sortedList.sort(comp);
+    //         NearestNeighbors nn = new NearestNeighbors(sortedList);
+    //         return nn;
+    //     }).to("nn-topic", Produced.with(SerdesFactory.from(Datapoint.class, true), SerdesFactory.from(NearestNeighbors.class, false)));;
+    // }
 
     public static void main(String[] args) throws Exception {
         final Properties props = getStreamsConfig();
-        final int k = 100;
+        // final int k = 100;
         final StreamsBuilder builder = new StreamsBuilder();
-        createNNStream(builder, k);
+        // createNNStream(builder, k);
         final KafkaStreams streams = new KafkaStreams(builder.build(), props);
         final CountDownLatch latch = new CountDownLatch(1);
 
