@@ -17,16 +17,14 @@ public class IndexStore implements StateStore, IndexWritableStore {
     private Vector<IndexTree> trees = new Vector<IndexTree>();
     private HashMap<Integer,Datapoint> data;
     private String name;
-    private Integer searchK;
     private Serde<Datapoint> dataSerdes;
     private boolean open = false;
 
-    public IndexStore(final String name, final Integer numTrees, final Integer searchK) {
+    public IndexStore(final String name, final Integer numTrees) {
         this.name = name;
-        this.searchK = searchK;
         this.data = new HashMap<Integer,Datapoint>(100000);
         for (int i = 0; i < numTrees; i++) {
-            this.trees.add(new IndexTree(this.searchK));
+            this.trees.add(new IndexTree());
         }
 
     }
@@ -104,12 +102,11 @@ public class IndexStore implements StateStore, IndexWritableStore {
     }
 
     @Override
-    public void setParameters(int numTrees, int searchK, int size) {
-        this.searchK = searchK;
+    public void setParameters(int numTrees, int size) {
         this.data = new HashMap<Integer,Datapoint>(size);
         this.trees = new Vector<IndexTree>(numTrees);
         for (int i = 0; i < numTrees; i++) {
-            this.trees.add(new IndexTree(this.searchK));
+            this.trees.add(new IndexTree());
         }
     }
   }

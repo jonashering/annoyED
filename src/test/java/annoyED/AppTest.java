@@ -53,26 +53,26 @@ public class AppTest {
         Vector<Double> a = new Vector<Double>();
         a.add(1d);
         a.add(1d);
-        Datapoint data_a = new Datapoint("Test-5", a, true, true);
+        Datapoint data_a = new Datapoint("5", a, true, true);
         Vector<Double> b = new Vector<Double>();
         b.add(5d);
         b.add(5d);
-        Datapoint data_b = new Datapoint("Test-7", b, true, true);
+        Datapoint data_b = new Datapoint("7", b, true, true);
         Vector<Double> c = new Vector<Double>();
         c.add(2d);
         c.add(2d);
-        Datapoint data_c = new Datapoint("Test-6", c, true, true);
+        Datapoint data_c = new Datapoint("6", c, true, true);
         Vector<Double> d = new Vector<Double>();
         d.add(7d);
         d.add(7d);
-        Datapoint data_d= new Datapoint("Test-8", d, true, true);
-        testDriver.pipeInput(recordFactory.create("source-topic", "Test-5", data_a));
-        testDriver.pipeInput(recordFactory.create("source-topic", "Test-6", data_c));
-        testDriver.pipeInput(recordFactory.create("source-topic", "Test-7", data_b));
-        testDriver.pipeInput(recordFactory.create("source-topic", "Test-8", data_d));
-        testDriver.pipeInput(recordFactory.create("source-topic", "Test-9", data_b));
-        testDriver.pipeInput(recordFactory.create("source-topic", "Test-10", data_c));
-        testDriver.pipeInput(recordFactory.create("source-topic", "Test-11", data_a));
+        Datapoint data_d= new Datapoint("8", d, true, true);
+        testDriver.pipeInput(recordFactory.create("source-topic", "5", data_a));
+        testDriver.pipeInput(recordFactory.create("source-topic", "6", data_c));
+        testDriver.pipeInput(recordFactory.create("source-topic", "7", data_b));
+        testDriver.pipeInput(recordFactory.create("source-topic", "8", data_d));
+        testDriver.pipeInput(recordFactory.create("source-topic", "9", data_b));
+        testDriver.pipeInput(recordFactory.create("source-topic", "10", data_c));
+        testDriver.pipeInput(recordFactory.create("source-topic", "11", data_a));
 
         ProducerRecord<Datapoint, NearestNeighborCandidates> outputRecord = testDriver.readOutput("sink-topic", datapointDeserializer, hashsetDeserializer);
 

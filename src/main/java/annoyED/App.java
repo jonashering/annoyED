@@ -40,7 +40,7 @@ public class App {
 
     public Topology build() {
 
-        IndexStoreBuilder inputSB = new IndexStoreBuilder("AllData", 4, 10);
+        IndexStoreBuilder inputSB = new IndexStoreBuilder("AllData", 4);
         Topology builder = new Topology();
         builder.addSource("Source", Serdes.String().deserializer(), SerdesFactory.from(Datapoint.class).deserializer(),
                 "source-topic").addProcessor("Process", () -> new NeighborProcessor(), "Source")

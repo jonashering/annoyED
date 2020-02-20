@@ -49,16 +49,14 @@ class IndexNode {
 
 public class IndexTree {
     public IndexNode head;
-    public Integer searchK;
-
-    public IndexTree(Integer searchK) {
-        this.head = new IndexNode();
-        this.searchK = searchK;
-    }
+    private Boolean first;
+    private Integer _k;
 
     public IndexTree() {
-        this(5);
+        this.head = new IndexNode();
+        this.first = true;
     }
+
 
     private IndexNode navigateToLeaf(Datapoint d) {
         IndexNode current = head;
@@ -73,10 +71,14 @@ public class IndexTree {
     }
 
     public void add(Datapoint d, int position, HashMap<Integer,Datapoint> data) {
+        if (this.first) {
+            this.first = false;
+            this._k = (d.vector.size() / 10) * 10 + 10;
+        }
         IndexNode current = this.navigateToLeaf(d);
-        if (current.size() < this.searchK){
+        if (current.size() < this._k){
             current.add(position);
-        } else if (current.size() == this.searchK) {
+        } else if (current.size() == this._k) {
             current.split(position, data);
         } else {
             current.split(position, data);

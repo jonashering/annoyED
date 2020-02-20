@@ -1,8 +1,5 @@
 package annoyED.serdes;
 
-import annoyED.serdes.JsonPOJODeserializer;
-import annoyED.serdes.JsonPOJOSerializer;
-
 import java.util.Map;
 import org.apache.kafka.common.serialization.Deserializer;
 import org.apache.kafka.common.serialization.Serde;

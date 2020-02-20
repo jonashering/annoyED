@@ -6,13 +6,11 @@ import org.apache.kafka.streams.state.StoreBuilder;
 public class IndexStoreBuilder implements StoreBuilder<IndexStore> {
     private String name = "";
     private Integer numTrees = 0;
-    private Integer searchK = 0;
     private Map<String, String> config;
 
-    public IndexStoreBuilder(String name, Integer numTrees, Integer searchK) {
+    public IndexStoreBuilder(String name, Integer numTrees) {
         this.name = name;
         this.numTrees = numTrees;
-        this.searchK = searchK;
     }
 
     @Override
@@ -38,7 +36,7 @@ public class IndexStoreBuilder implements StoreBuilder<IndexStore> {
 
     @Override
     public IndexStore build() {
-        return new IndexStore(this.name, this.numTrees, this.searchK);
+        return new IndexStore(this.name, this.numTrees);
     }
 
     @Override
