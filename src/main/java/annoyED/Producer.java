@@ -20,13 +20,13 @@ public class Producer {
         final KafkaProducer<String, Datapoint> prod = new KafkaProducer<>(prodprops, Serdes.String().serializer(), SerdesFactory.from(Datapoint.class).serializer());
         Datapoint d = null;
         Random r = new Random();
-        for (int i = 0; i < 20; i++) {
-            String name = "Test-" + String.valueOf(i);
+        for (int i = 0; i < 10000; i++) {
+            String name = String.valueOf(i);
             Vector<Double> v = new Vector<Double>();
             for (double j = 0d; j < 5d ; j++) {
-                v.add(r.nextDouble());
+                v.add(Double.valueOf(r.nextInt(10)));
             }
-            d = new Datapoint(name, v);
+            d = new Datapoint(name, v, true, true);
             prod.send(new ProducerRecord<String,Datapoint>("source-topic", name, d));
         }
         prod.close();

@@ -29,13 +29,9 @@ class IndexNode {
 
     public void split(int dp, HashMap<Integer,Datapoint> d) { // create split and move datapoints to leaf nodes
         this.add(dp);
-        Integer index1 = this.random.nextInt(this.size());
-        Integer index2 = this.random.nextInt(this.size());
-        while (index1 == index2) {
-            index2 = this.random.nextInt(this.size());  
-        }
-        Integer a = this.data.get(index1);
-        Integer b = this.data.get(index2);
+        Integer index = this.random.nextInt(this.size() - 1);
+        Integer a = this.data.get(index);
+        Integer b = this.data.get(index+1);
         this.split = new IndexSplit(d.get(a), d.get(b));
         this.leftChild = new IndexNode();
         this.rightChild = new IndexNode();

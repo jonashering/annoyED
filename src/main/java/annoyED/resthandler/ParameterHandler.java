@@ -33,6 +33,8 @@ public class ParameterHandler implements HttpHandler {
         query = new String(out.toByteArray(), encoding);
         String[] parts = query.split(";");
         store.setParameters(Integer.parseInt(parts[0]), Integer.parseInt(parts[1]), Integer.parseInt(parts[2]));
+        System.out.println(store.trees().get(0).searchK);
+        System.out.println(store.trees().size());
           byte[] response = "Successfully set params".getBytes();
           t.sendResponseHeaders(200, response.length);
           OutputStream os = t.getResponseBody();

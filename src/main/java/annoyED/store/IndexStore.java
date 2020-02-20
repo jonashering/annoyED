@@ -94,7 +94,9 @@ public class IndexStore implements StateStore, IndexWritableStore {
     @Override
     public void write(String key, Datapoint value) {
         int position = Integer.parseInt(key);
-        System.out.println(position);
+        if (position % 1000 == 0) {
+            System.out.println(position);
+        }
         data.put(Integer.parseInt(key), value);
         for (int i = 0; i < this.trees.size(); i++) {
             this.trees.get(i).add(value, position, data);
