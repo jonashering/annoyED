@@ -26,7 +26,7 @@ public class Producer {
             for (double j = 0d; j < 5d ; j++) {
                 v.add(Double.valueOf(r.nextInt(10)));
             }
-            d = new Datapoint(name, v, true, true);
+            d = new Datapoint(name, v, true, true, 10000);
             prod.send(new ProducerRecord<String,Datapoint>("source-topic", name, d));
         }
         prod.close();

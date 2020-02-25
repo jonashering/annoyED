@@ -14,4 +14,12 @@ public class NearestNeighbors {
     public NearestNeighbors(List<Integer> list) {
         this.list = list;
     }
+
+	public static NearestNeighbors fromPairs(List<Pair> dps) {
+        NearestNeighbors nn = new NearestNeighbors();
+        for (Pair p : dps) {
+            nn.list.add(p.index);
+        }
+        return nn;
+	}
 }

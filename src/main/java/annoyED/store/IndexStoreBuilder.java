@@ -36,7 +36,7 @@ public class IndexStoreBuilder implements StoreBuilder<IndexStore> {
 
     @Override
     public IndexStore build() {
-        return new IndexStore(this.name, this.numTrees);
+        return new IndexStore(this.name, this.numTrees, 0); // euclidean
     }
 
     @Override

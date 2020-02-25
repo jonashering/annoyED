@@ -1,6 +1,8 @@
 package annoyED.store;
 
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Random;
 import java.util.Vector;
 
@@ -73,22 +75,25 @@ public class IndexTree {
     public void add(Datapoint d, int position, HashMap<Integer,Datapoint> data) {
         if (this.first) {
             this.first = false;
-            this._k = (d.vector.size() / 10) * 10 + 10;
+            this._k = (d.vector.size() / 10) * 10 + 10; // round up to the next 10
+            System.out.println("Set _k to " + this._k);
         }
         IndexNode current = this.navigateToLeaf(d);
         if (current.size() < this._k){
             current.add(position);
-        } else if (current.size() == this._k) {
+        } else if (current.size() >= this._k) {
             current.split(position, data);
-        } else {
-            current.split(position, data);
-            System.err.println("We're growing too big");
         }
     }
 
-    public Vector<Integer> getNeighborCandidates(Datapoint d) {
+    public List<Pair> getNeighborCandidates(Datapoint d, HashMap<Integer,Datapoint> data) {
         IndexNode current = this.navigateToLeaf(d);
-        return current.data;
+        Vector<Pair> ret = new Vector<>(current.data.size());
+        for (Integer i : current.data) {
+            ret.add(new Pair(i, d.distTo(data.get(i))));
+        }
+        Collections.sort(ret);
+        return ret.subList(0, Math.min(ret.size(), d.k));
     }
     
 }
