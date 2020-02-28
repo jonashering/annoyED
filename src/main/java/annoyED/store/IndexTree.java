@@ -126,7 +126,7 @@ public class IndexTree {
     public void add(Datapoint d, int position, HashMap<Integer,Datapoint> data) {
         if (this.first) {
             this.first = false;
-            this._k = (d.vector.size() / 10) * 10 + 2; // round up to the next 10
+            this._k = (d.vector.size() / 10) * 10 + 10; // round up to the next 10
             System.out.println("Set _k to " + this._k);
         }
         IndexNode current = this.navigateToLeaf(d);
