@@ -39,4 +39,13 @@ public class Datapoint {
 
     return Math.sqrt(dist);
   }
+
+  @Override
+  public Datapoint clone() {
+    Datapoint newDataPoint = new Datapoint();
+    newDataPoint.datapointID = this.datapointID;
+    newDataPoint.vector = (Vector<Double>) this.vector.clone();
+
+    return newDataPoint;
+  }
 }

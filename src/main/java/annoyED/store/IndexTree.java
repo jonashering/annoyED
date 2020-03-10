@@ -1,5 +1,6 @@
 package annoyED.store;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -33,10 +34,8 @@ class IndexNode {
 
     public void split(int dp, HashMap<Integer,Datapoint> d) { // create split and move datapoints to leaf nodes
         this.add(dp);
-        Integer index = this.random.nextInt(this.size() - 1);
-        Integer a = this.data.get(index);
-        Integer b = this.data.get(index+1);
-        this.split = new IndexSplit(d.get(a), d.get(b));
+        List<Datapoint> splitDataPoints = this.getSplitCandidates(d);
+        this.split = new IndexSplit(splitDataPoints.get(0), splitDataPoints.get(1));
         this.leftChild = new IndexNode();
         this.rightChild = new IndexNode();
         for (int i = 0; i < this.size(); i++) {
@@ -48,6 +47,58 @@ class IndexNode {
             }
         }
         this.data = null;
+    }
+
+    public List<Datapoint> getSplitCandidates(HashMap<Integer, Datapoint> dataPointTable) {
+        List<Datapoint> resultList = new ArrayList<>(2); 
+        if (false) { // TODO: set somewhere in a config file
+            int firstIndex = this.random.nextInt(this.size());
+            int secondIndex = this.random.nextInt(this.size() - 1);
+            secondIndex += (secondIndex >= firstIndex) ? 1 : 0;
+            resultList.add(dataPointTable.get(firstIndex));
+            resultList.add(dataPointTable.get(secondIndex));
+        } else {
+            resultList = this.calculateTwoMeans(dataPointTable);
+        }
+
+        return resultList;
+    }
+
+    private List<Datapoint> calculateTwoMeans(HashMap<Integer, Datapoint> dataPointTable) {
+        int maxIterations = 200 < this.size() ? 200 : this.size();
+        List<Integer> iterationOrder = ((Vector<Integer>) this.data.clone()).subList(0, maxIterations);
+        Collections.shuffle(iterationOrder);
+
+        Datapoint firstCentroid = dataPointTable.get(iterationOrder.remove(0)).clone();
+        Datapoint secondCentroid = dataPointTable.get(iterationOrder.remove(0)).clone();
+        int firstCentroidCounter = 1, secondCentroidCounter = 1;
+
+        for (int dataPointIndex : iterationOrder) {
+            double distanceToFirstCentroid = firstCentroid.distTo(dataPointTable.get(dataPointIndex));
+            double distanceToSecondCentroid = secondCentroid.distTo(dataPointTable.get(dataPointIndex));
+
+            if (distanceToFirstCentroid < distanceToSecondCentroid) {
+                for (int i = 0; i < firstCentroid.vector.size(); i++) {
+                    firstCentroid.vector.set(
+                        i,
+                        (firstCentroid.vector.get(i) * firstCentroidCounter + dataPointTable.get(dataPointIndex).vector.get(i)) / (firstCentroidCounter + 1));
+                }
+                firstCentroidCounter++;
+            } else if (distanceToFirstCentroid > distanceToSecondCentroid) {
+                for (int i = 0; i < secondCentroid.vector.size(); i++) {
+                    secondCentroid.vector.set(
+                        i,
+                        (secondCentroid.vector.get(i) * secondCentroidCounter + dataPointTable.get(dataPointIndex).vector.get(i)) / (secondCentroidCounter + 1));
+                }
+                secondCentroidCounter++;
+            }
+        }
+
+        List<Datapoint> resultTuple = new ArrayList<>(2);
+        resultTuple.add(firstCentroid);
+        resultTuple.add(secondCentroid);
+
+        return resultTuple;
     }
 }
 
