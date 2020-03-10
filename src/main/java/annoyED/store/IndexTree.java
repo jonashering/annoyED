@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 import java.util.Vector;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 class IndexNode {
     public IndexSplit split = null;
@@ -88,10 +90,10 @@ public class IndexTree {
 
     public List<Pair> getNeighborCandidates(Datapoint d, HashMap<Integer,Datapoint> data) {
         IndexNode current = this.navigateToLeaf(d);
-        Vector<Pair> ret = new Vector<>(current.data.size());
-        for (Integer i : current.data) {
-            ret.add(new Pair(i, d.distTo(data.get(i))));
-        }
+        Stream<Pair> s = current.data.parallelStream().map(((i) -> {
+            return new Pair(i, d.distTo(data.get(i)));
+        }));
+        List<Pair> ret = s.collect(Collectors.toList());
         Collections.sort(ret);
         return ret.subList(0, Math.min(ret.size(), d.k));
     }
