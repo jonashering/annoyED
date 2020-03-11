@@ -45,10 +45,6 @@ docker {
     }
 }
 
-dockerCreateDockerfile {
-    environmentVariable 'BOOTSTRAP_SERVERS_CONFIG', 'kafka:9092'
-}
-
 application {
     // Define the main class for the application.
     mainClassName = 'annoyED.App'
