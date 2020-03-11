@@ -6,8 +6,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 import java.util.Vector;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import annoyED.data.Datapoint;
 import annoyED.data.Pair;
@@ -54,7 +52,7 @@ class IndexNode {
 
     public List<Datapoint> getSplitCandidates(HashMap<Integer, Datapoint> dataPointTable) {
         List<Datapoint> resultList = new ArrayList<>(2); 
-        if (false) { // TODO: set somewhere in a config file
+        if (true) { // TODO: set somewhere in a config file
             int firstIndex = this.random.nextInt(this.size());
             int secondIndex = this.random.nextInt(this.size() - 1);
             secondIndex += (secondIndex >= firstIndex) ? 1 : 0;
@@ -131,7 +129,7 @@ public class IndexTree {
     public void add(Datapoint d, int position, HashMap<Integer,Datapoint> data) {
         if (this.first) {
             this.first = false;
-            this._k = (d.vector.size() / 10) * 10 + 10; // round up to the next 10
+            this._k = (d.vector.size() / 100) * 100 + 100; // round up to the next 10
             System.out.println("Set _k to " + this._k);
         }
         IndexNode current = this.navigateToLeaf(d);
@@ -142,12 +140,18 @@ public class IndexTree {
         }
     }
 
-    public List<Pair> getNeighborCandidates(Datapoint d, HashMap<Integer,Datapoint> data) {
+    public List<Pair> getNeighborCandidates(Datapoint d, HashMap<Integer,Datapoint> data, HashMap<Integer, Double> lookup) {
         IndexNode current = this.navigateToLeaf(d);
-        Stream<Pair> s = current.data.parallelStream().map(((i) -> {
-            return new Pair(i, d.distTo(data.get(i)));
-        }));
-        List<Pair> ret = s.collect(Collectors.toList());
+        List<Pair> ret = new Vector<Pair>(current.data.size());
+        for (Integer i : current.data) {
+            if (lookup.containsKey(i)) {
+                ret.add(new Pair(i, lookup.get(i)));
+            } else {
+                Pair p = new Pair(i, d.distTo(data.get(i)));
+                ret.add(p);
+                lookup.put(i, p.distance);
+            }
+        }
         Collections.sort(ret);
         return ret.subList(0, Math.min(ret.size(), d.k));
     }

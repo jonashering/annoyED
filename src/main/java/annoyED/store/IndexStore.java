@@ -87,8 +87,9 @@ public class IndexStore implements StateStore, IndexWritableStore {
         List<List<Pair>> candidates = new Vector<List<Pair>>(datapoint.k);
         List<Integer> nn = new Vector<Integer>(datapoint.k);
         int[] indices = new int[this.trees.size()];
+        HashMap<Integer, Double> lookup = new HashMap<Integer, Double>(datapoint.vector.size());
         for (IndexTree tree: this.trees()) {
-            candidates.add(tree.getNeighborCandidates(datapoint, data));
+            candidates.add(tree.getNeighborCandidates(datapoint, data, lookup));
         };
         while (nn.size() < datapoint.k) {
             int index = -1;
