@@ -1,4 +1,4 @@
-package annoyED.store;
+package annoyED.tree;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -8,6 +8,9 @@ import java.util.Random;
 import java.util.Vector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import annoyED.data.Datapoint;
+import annoyED.data.Pair;
 
 class IndexNode {
     public IndexSplit split = null;

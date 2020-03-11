@@ -9,8 +9,8 @@ import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.Serdes;
 
+import annoyED.data.Datapoint;
 import annoyED.serdes.SerdesFactory;
-import annoyED.store.Datapoint;
 
 public class Producer {
 

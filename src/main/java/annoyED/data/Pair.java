@@ -1,4 +1,4 @@
-package annoyED.store;
+package annoyED.data;
 
 public class Pair implements Comparable<Pair> {
     public Integer index;

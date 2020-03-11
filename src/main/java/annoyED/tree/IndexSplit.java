@@ -1,6 +1,8 @@
-package annoyED.store;
+package annoyED.tree;
 
 import java.util.Vector;
+
+import annoyED.data.Datapoint;
 
 public class IndexSplit {
     public Double distance;

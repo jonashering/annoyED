@@ -8,7 +8,11 @@ import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.streams.processor.ProcessorContext;
 import org.apache.kafka.streams.processor.StateStore;
 
-import annoyED.serdes.JsonPojoSerde;
+import annoyED.data.Datapoint;
+import annoyED.data.NearestNeighbors;
+import annoyED.data.Pair;
+import annoyED.serdes.JsonPOJOSerde;
+import annoyED.tree.IndexTree;
 
 public class IndexStore implements StateStore, IndexWritableStore {
     private Vector<IndexTree> trees = new Vector<IndexTree>();
@@ -65,7 +69,7 @@ public class IndexStore implements StateStore, IndexWritableStore {
     @Override
     public void init(ProcessorContext context, StateStore root) {
         
-        dataSerdes = new JsonPojoSerde<Datapoint>();
+        dataSerdes = new JsonPOJOSerde<Datapoint>();
         context.register(root, (key, value) -> {
             String sKey = new String(key);
             write(sKey, dataSerdes.deserializer().deserialize(sKey, value));

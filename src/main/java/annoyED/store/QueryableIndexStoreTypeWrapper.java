@@ -6,6 +6,10 @@ import java.util.Vector;
 import org.apache.kafka.streams.state.QueryableStoreType;
 import org.apache.kafka.streams.state.internals.StateStoreProvider;
 
+import annoyED.data.Datapoint;
+import annoyED.data.NearestNeighbors;
+import annoyED.tree.IndexTree;
+
 public class QueryableIndexStoreTypeWrapper implements IndexReadableStore {
 
     private final QueryableStoreType<IndexReadableStore> customStoreType;

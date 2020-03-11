@@ -14,7 +14,7 @@ public class SerdesFactory {
     Map<String, Object> serdeProps = new HashMap<>();
     serdeProps.put("JsonPOJOClass", clazz);
 
-    JsonPojoSerde<T> serde = new JsonPojoSerde<T>();
+    JsonPOJOSerde<T> serde = new JsonPOJOSerde<T>();
     serde.configure(serdeProps, isKey);
 
     return serde;

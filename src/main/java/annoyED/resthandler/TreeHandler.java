@@ -3,15 +3,15 @@ package annoyED.resthandler;
 import java.io.OutputStream;
 import java.util.Vector;
 
+import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpHandler;
+
 import org.apache.kafka.streams.KafkaStreams;
 
 import annoyED.serdes.JsonPOJOSerializer;
 import annoyED.store.IndexReadableStore;
-import annoyED.store.IndexTree;
 import annoyED.store.QueryableIndexStoreType;
-
-import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
+import annoyED.tree.IndexTree;
 
 public class TreeHandler implements HttpHandler {
     KafkaStreams streams;

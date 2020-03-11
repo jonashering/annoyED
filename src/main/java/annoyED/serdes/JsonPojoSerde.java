@@ -6,7 +6,7 @@ import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serializer;
 
 
-public class JsonPojoSerde<T> implements Serde<T> {
+public class JsonPOJOSerde<T> implements Serde<T> {
   final private JsonPOJOSerializer<T> serializer;
   final private JsonPOJODeserializer<T> deserializer;
 
@@ -16,7 +16,7 @@ public class JsonPojoSerde<T> implements Serde<T> {
     deserializer.configure(configs, isKey);
   }
 
-  public JsonPojoSerde() {
+  public JsonPOJOSerde() {
     this.serializer = new JsonPOJOSerializer<T>();
     this.deserializer = new JsonPOJODeserializer<T>();
   }

@@ -3,6 +3,9 @@
  */
 package annoyED;
 
+import java.util.Optional;
+import java.util.Properties;
+
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.KafkaStreams;
@@ -10,13 +13,10 @@ import org.apache.kafka.streams.StreamsConfig;
 import org.apache.kafka.streams.Topology;
 import org.apache.kafka.streams.state.HostInfo;
 
-import annoyED.store.Datapoint;
-import annoyED.store.IndexStoreBuilder;
-import annoyED.store.NearestNeighbors;
+import annoyED.data.Datapoint;
+import annoyED.data.NearestNeighbors;
 import annoyED.serdes.SerdesFactory;
-
-import java.util.Optional;
-import java.util.Properties;
+import annoyED.store.IndexStoreBuilder;
 
 public class App {
     static final String DEFAULT_HOST = "localhost";

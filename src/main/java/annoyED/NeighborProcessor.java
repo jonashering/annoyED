@@ -2,7 +2,9 @@ package annoyED;
 
 import org.apache.kafka.streams.processor.Processor;
 import org.apache.kafka.streams.processor.ProcessorContext;
-import annoyED.store.*;
+
+import annoyED.data.Datapoint;
+import annoyED.store.IndexStore;
 
 public class NeighborProcessor implements Processor<String, Datapoint> {
 

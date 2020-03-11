@@ -3,10 +3,12 @@
  */
 package annoyED;
 
+import java.util.Vector;
+
 import org.apache.kafka.clients.producer.ProducerRecord;
-import org.apache.kafka.common.serialization.StringSerializer;
 import org.apache.kafka.common.serialization.Deserializer;
 import org.apache.kafka.common.serialization.Serde;
+import org.apache.kafka.common.serialization.StringSerializer;
 import org.apache.kafka.streams.Topology;
 import org.apache.kafka.streams.TopologyTestDriver;
 import org.apache.kafka.streams.test.ConsumerRecordFactory;
@@ -14,11 +16,9 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import annoyED.data.Datapoint;
+import annoyED.data.NearestNeighborCandidates;
 import annoyED.serdes.SerdesFactory;
-import annoyED.store.Datapoint;
-import annoyED.store.NearestNeighborCandidates;
-
-import java.util.Vector;
 
 
 
