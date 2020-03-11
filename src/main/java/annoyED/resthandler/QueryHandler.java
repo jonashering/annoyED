@@ -19,13 +19,13 @@ import annoyED.serdes.JsonPOJOSerializer;
 import annoyED.store.IndexReadableStore;
 import annoyED.store.QueryableIndexStoreType;
 
-public class TestHandler implements HttpHandler {
+public class QueryHandler implements HttpHandler {
     KafkaStreams streams;
     String encoding = "ISO-8859-1";
     Map<String, Object> serdeProps = new HashMap<>();
 
   
-    public TestHandler(KafkaStreams streams) {
+    public QueryHandler(KafkaStreams streams) {
       this.streams = streams;
       this.serdeProps.put("JsonPOJOClass", Datapoint.class);
     }
