@@ -35,7 +35,7 @@ class IndexNode {
 
     public void split(int dp, HashMap<Integer,Datapoint> d) { // create split and move datapoints to leaf nodes
         this.add(dp);
-        List<Datapoint> splitDataPoints = this.calculateTwoMeans(d);
+        List<Datapoint> splitDataPoints = this.getSplitCandidates(d);
         this.split = new IndexSplit(splitDataPoints.get(0), splitDataPoints.get(1));
         this.leftChild = new IndexNode();
         this.rightChild = new IndexNode();
@@ -48,6 +48,19 @@ class IndexNode {
             }
         }
         this.data = null;
+    }
+
+    public List<Datapoint> getSplitCandidates(HashMap<Integer, Datapoint> dataPointTable) {
+        List<Datapoint> resultList = new ArrayList<>(2); 
+        if (true) { // TODO: set somewhere in a config file
+            int firstIndex = this.random.nextInt(this.size() - 2);
+            resultList.add(dataPointTable.get(firstIndex));
+            resultList.add(dataPointTable.get(firstIndex + 1));
+        } else {
+            resultList = this.calculateTwoMeans(dataPointTable);
+        }
+
+        return resultList;
     }
 
     private List<Datapoint> calculateTwoMeans(HashMap<Integer, Datapoint> dataPointTable) {

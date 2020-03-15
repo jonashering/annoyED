@@ -15,6 +15,8 @@ plugins {
     id 'com.bmuschko.docker-java-application' version '6.1.4'
 }
 
+applicationDefaultJvmArgs = ["-Xms4G", "-Xmx4G"]
+
 version '1.0-SNAPSHOT'
 
 sourceCompatibility = 1.8
