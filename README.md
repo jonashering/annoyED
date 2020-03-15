@@ -23,18 +23,18 @@ On startup, the application exposes three REST endpoints on `localhost:5000`. Th
 - **`/params`:** To configure the application, make a POST request with the request body `<Number of Trees>;<Expected Dataset Size>;<Distance Metric ID>` to this endpoint. The store creates the trees and allocates the space accordingly (use 0 if size is unknown). We currently support 2 distance metrics: Euclidean (ID: 0) and Angular (ID: 1). An example body would be `10;0;0`. We would get 10 trees, no preallocated memory and the euclidean distance metric.
 Be aware that every POST request resets the whole storage. This means that all data that was loaded into the store will be discarded.
 
-Our Kaflka Streams application uses two topics: `source-topic` for input and `sink-topic` for output. JSON serialized messages can be written and read by our app. Messages to the `source-topic` should have the following format: 
+Our Kafka Streams application uses two topics: `source-topic` for input and `sink-topic` for output. JSON serialized messages are written and read by our app. Messages to the `source-topic` should have the following format: 
 ```js
 {   'datapointID': 0,
     'vector':      [0.3, 0.7, 255, ...],
-    'persist':     True,
-    'write':       True,
+    'persist':     true,
+    'write':       false,
     'k':           10                       }
 ```
 
-Use the flags `persist=True` to add a point to the index and `write=True` to retrieve its nearest neighbors and write them to the `sink-topic` as explained [here](#Dataflow). The application then outputs JSON serialized NearestNeighbors object to the `sink-topic` in the following format; list contains the `datapointID`s of the k nearest neighbors sorted by distance:
+Use the flags `persist=True` to add a point to the index and `write=True` to retrieve its nearest neighbors and write them to the `sink-topic` as explained in detail [here](#Dataflow). The application then outputs JSON serialized NearestNeighbors object to the `sink-topic` in the following format; list contains the `datapointID`s of the k nearest neighbors sorted by distance:
 ```js
-{  'list': [1, 5, 4, 3]   }
+{  'list': [1, 5, 4, 3]  }
 ```
 
 - **`/query`:** After having added some points to your index, start querying nearest neighbors for a new point by making a POST request with a JSON serialized Datapoint as request body (as described above) to this endpoint. The result will be a JSON serialized NearestNeighbors object with the ids of the k nearest neighbor points.
@@ -43,7 +43,7 @@ Use the flags `persist=True` to add a point to the index and `write=True` to ret
 
 ### Usage with ann-benchmarks
 
-Erik Bernhardsson, the creator of Annoy, also developed a benchmarking framework called ann-benchmarks [3], which we use to evaluate our implementation. To run the benchmarks on AnnoyED, use our fork of ann-benchmarks found [↗ here](https://github.com/MariusDanner/ann-benchmarks) which includes a custom AnnoyED wrapper, i.e. datapoint producer, as well as the required configuration files. Then, follow the README there. In short this means:
+Erik Bernhardsson, the creator of Annoy, also developed a benchmarking framework called ann-benchmarks [3], which we use to evaluate our implementation. To run the benchmarks on AnnoyED, use our fork of ann-benchmarks found [here](https://github.com/MariusDanner/ann-benchmarks) which includes a custom AnnoyED wrapper, i.e. datapoint producer, as well as the required configuration files. Then, follow the README there. In short this means:
 
 ```bash
 git clone git@github.com:MariusDanner/ann-benchmarks.git  # clone repository
@@ -93,7 +93,7 @@ Apart from the Kafka-relevant components, we defined the following classes to st
 
 <img src="https://user-images.githubusercontent.com/15236859/76688661-28123780-662f-11ea-9734-f74c14a2f81a.png" width=70%>
 
-We implemented three data holding classes: `Datapoint`s have an _id_ which uniquely identifies them and is used as a key to store the `Datapoint` in a global lookup table. The _data_ vector holds the position of the datapoint in the vector space. The _persist_ flag tells the `NeighborProcessor` whether or not the datapoint should be written into the index. The _write_ flag tells the `NeighborProcessor` if the nearest neighbors should be retrieved and written to the `sink-topic`. The _k_ variable is only used if the _write_ flag is set and tells the `IndexStore` how many nearest neighbors should be retrieved.
+`Datapoint`s have an _id_ which uniquely identifies them and is used as a key to store the `Datapoint` in a global lookup table. The _data_ vector holds the position of the datapoint in the vector space. The _persist_ flag tells the `NeighborProcessor` whether or not the datapoint should be written into the index. The _write_ flag tells the `NeighborProcessor` if the nearest neighbors should be retrieved and written to the `sink-topic`. The _k_ variable is only used if the _write_ flag is set and tells the `IndexStore` how many nearest neighbors should be retrieved.
 
 ### Dataflow
 
