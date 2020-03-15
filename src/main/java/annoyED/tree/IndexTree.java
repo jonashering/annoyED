@@ -124,13 +124,13 @@ public class IndexTree {
         return current;
     }
 
-    public void add(Datapoint d, int position, HashMap<Integer,Datapoint> data) {
+    public void add(int position, HashMap<Integer,Datapoint> data) {
         if (this.first) {
             this.first = false;
-            this._k = (d.vector.size() / 100) * 100 + 100; // round up to the next 10
+            this._k = (data.get(position).vector.size() / 100) * 100 + 100; // round up to the next 10
             System.out.println("Set _k to " + this._k);
         }
-        IndexNode current = this.navigateToLeaf(d);
+        IndexNode current = this.navigateToLeaf(data.get(position));
         if (current.size() < this._k){
             current.add(position);
         } else if (current.size() >= this._k) {

@@ -137,16 +137,15 @@ public class IndexStore implements StateStore, IndexWritableStore {
 
     @Override
     public void write(String key, Datapoint value) {
-        int position = Integer.parseInt(key);
-        if (position % 1000 == 0) {
-            System.out.println(position);
+        if (value.datapointID % 1000 == 0) {
+            System.out.println(value.datapointID);
         }
         if (this.distanceMetric == 1) {
             convertToUnitVector(value);
         }
-        data.put(Integer.parseInt(key), value);
+        data.put(value.datapointID, value);
         for (int i = 0; i < this.trees.size(); i++) {
-            this.trees.get(i).add(value, position, data);
+            this.trees.get(i).add(value.datapointID, data);
         }
     }
 

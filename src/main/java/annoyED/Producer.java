@@ -21,13 +21,12 @@ public class Producer {
         Datapoint d = null;
         Random r = new Random();
         for (int i = 0; i < 10000; i++) {
-            String name = String.valueOf(i);
             Vector<Double> v = new Vector<Double>();
             for (double j = 0d; j < 5d ; j++) {
                 v.add(Double.valueOf(r.nextInt(10)));
             }
-            d = new Datapoint(name, v, true, true, 10000);
-            prod.send(new ProducerRecord<String,Datapoint>("source-topic", name, d));
+            d = new Datapoint(i, v, true, true, 10000);
+            prod.send(new ProducerRecord<String,Datapoint>("source-topic", Integer.toString(i), d));
         }
         prod.close();
     }

@@ -6,16 +6,16 @@ import java.util.Vector;
 public class Datapoint {
 
 
-  public String datapointID;
+  public Integer datapointID;
   public Vector<Double> vector;
   public Boolean persist = false;
   public boolean write;
   public Integer k;
 
   public Datapoint() {
-    this("", new Vector<Double>(), false, true, 1000);
+    this(-1, new Vector<Double>(), false, true, 1000);
   }
-  public Datapoint(String datapointId, Vector<Double> vector, Boolean persist, Boolean write, Integer k) {
+  public Datapoint(Integer datapointId, Vector<Double> vector, Boolean persist, Boolean write, Integer k) {
     this.datapointID = datapointId;
     this.vector = vector;
     this.persist = persist;
@@ -23,7 +23,7 @@ public class Datapoint {
     this.k = k;
   }
 
-  public Datapoint(String datapointId, Vector<Double> vector) {
+  public Datapoint(Integer datapointId, Vector<Double> vector) {
     this.datapointID = datapointId;
     this.vector = vector;
     this.persist = false;
