@@ -98,7 +98,7 @@ Apart from the Kafka-relevant components, we defined the following classes to st
 
 <img src="https://user-images.githubusercontent.com/15236859/76688661-28123780-662f-11ea-9734-f74c14a2f81a.png" width=70%>
 
-We implemented three data holding classes: `Datapoint`s have an _id_ which uniquely identifies them and is used as a key to store the `Datapoint` in a global lookup table. The _data_ vector holds the position of the datapoint in the vector space. The _persist_ flag tells the `NeighborProcessor` whether or not the datapoint should be written into the index. The _write_ flag tells the `NeighborProcessor` if the nearest neighbors should be retrieved and/or written to the `sink-topic`. The _k_ variable is only used if the _write_ flag is set and tells the `IndexStore` how many nearest neighbors should be retrieved.
+We implemented three data holding classes: `Datapoint`s have an _id_ which uniquely identifies them and is used as a key to store the `Datapoint` in a global lookup table. The _data_ vector holds the position of the datapoint in the vector space. The _persist_ flag tells the `NeighborProcessor` whether or not the datapoint should be written into the index. The _write_ flag tells the `NeighborProcessor` if the nearest neighbors should be retrieved and written to the `sink-topic`. The _k_ variable is only used if the _write_ flag is set and tells the `IndexStore` how many nearest neighbors should be retrieved.
 
 ### Dataflow
 
@@ -127,12 +127,12 @@ In the process of developing annoyED, we started with a straightforward implemen
 
 ![](https://user-images.githubusercontent.com/23058484/76700077-ebd4ea80-66b3-11ea-9d2b-6ab76c7b5309.png)  ![](https://user-images.githubusercontent.com/23058484/76700076-eaa3bd80-66b3-11ea-864e-14e3a080ff33.png)
 
-**Baseline:** Already with our baseline, where we select split candidates randomly and otherwise proceed as described in the previous section, we achieve a precision of up to 0.87 at 31 QPS with 5 index trees. As expected, with more trees our model can answer queries with higher recall, i.e. unfavorable partitions in one index tree are compensated by the other trees, but however at the cost of slower throughput due to the increased complexity.
+**Baseline:** Already with our baseline (_No Caching + Random_), where we select split candidates randomly and otherwise proceed as described in the previous section but leabing out the aforementioned query caching, we achieve a precision of up to 0.87 at 31 QPS with 5 index trees. As expected, with more trees our model can answer queries with higher recall, i.e. unfavorable partitions in one index tree are compensated by the other trees, but however at the cost of slower throughput due to the increased complexity.
 
 **2-Means Split Candidate Selection**: Randomly selecting the points between which the splitting hyperplane is constructed in a split can lead to unbalanced splits, e.g. if a selected point is an outlier. This will then lead to an unbalanced and unnecessarily deep tree structure in our index. To approach this problem, we added a k-means approximation with two centroids to create an optimally splitting hyperplane.
-With this optimization, we achieve a higher precision of up to 0.92 while at the same time increasing the throughput to 30 QPS with 5 trees. Splitting the points in a more balanced way and thus creating more quality index trees is therefore a meaningful addition.
+With this optimization, we achieve a higher precision of up to 0.92 while at the same time maintaining the throughput of 31 QPS with 5 trees. We observe an increased QPS for less trees as well. Splitting the points in a more balanced way and thus creating more quality index trees is therefore a meaningful addition.
 
-_However:_ When later running the experiments on the NYTimes dataset, we discovered that the 2-means algorithm does not always improve the performance. Since the capacity of the index tree leaves depends on the dimensionality of points, low-dimensional datasets trigger splitting more often. The costly 2-means, as well as the large dataset size of NYTimes, makes the index building slower, we thus made it optional. 
+_However:_ When later running the experiments on the NYTimes dataset, we discovered that the 2-means algorithm might decrease the performance. Since the capacity of the index tree leaves depends on the dimensionality of points, low-dimensional datasets trigger splitting more often. The costly 2-means, as well as the large dataset size of NYTimes, makes the index building slower, we thus made it optional. 
 
 **Caching intermediate distance results:** A quick recap of our implementation: When searching nearest neighbors, each index tree is traversed to the correct leaf node and from its set of points, the k closest points are forwarded as neighbor candidates where they are then merged to the true k results. Even though every index tree randomly partitions its points differently, it is likely that there is a common subset of neighbor candidates, i.e. the points closest, among all index trees. In our baseline implementation, this led to distances being calculated redundantly for every index tree. As an optimization, we cache the distances and so avoid duplicate computation. This does not lead to quality improvement, however, it improves the throughput to 40 QPS with 5 trees. In fact, we can now train more trees and while maintaining the same throughput we previously had with fewer trees, e.g. instead of 4 trees we now can have 5 at 40 _QPS_ increasing the recall by 0.04.
 
@@ -148,10 +148,10 @@ Additionally, we tested how well our implementation works with different setting
 
 ![](https://user-images.githubusercontent.com/23058484/76701723-eaabb980-66c3-11ea-904d-a9bd57a5c751.png)  ![](https://user-images.githubusercontent.com/23058484/76701725-eb445000-66c3-11ea-9d6c-2883a3953335.png)
 
-With our implementation working reasonably well on MNIST with euclidean distance, we also tested it on the similar but more complex Fashion-MNIST dataset (euclidean distance) and on the NYTimes dataset (angular distance) with k = 10.  We generally observe that with a higher number of index trees, the _recall_ increases while the _QPS_ decreases.
+With our implementation working reasonably well on MNIST with euclidean distance, we also tested it on the similar Fashion-MNIST dataset (euclidean distance) and on the NYTimes dataset (angular distance) with k = 10.  We generally observe that with a higher number of index trees, the _recall_ increases while the _QPS_ decreases.
 
-The NYTimes dataset has 5 times the points as MNIST but only 256 dimensions, so retrieving nearest neighbors is more difficult which is also confirmed by the recall results [3] of other algorithms.
-Fashion-MNIST on the other hand performs very similar MNIST. We account for this it is equal to MNIST in terms of dimensionality, size and the used distance measure. The insignificant differences are likely due to chance at runtime.
+The NYTimes dataset has 5 times the points as MNIST but only 256 dimensions. This results in a lower _\_k_ (than MNIST) and thus having less candidates per tree. This means that every tree holds a smaller fraction of available points (maximum 300/290000 = 0.001 (while for MNIST, each tree holds a maximum fraction of 0.013) so retrieving nearest neighbors is more difficult which is also confirmed by the recall results [3] of other algorithms.
+Fashion-MNIST on the other hand performs very similar to MNIST. The reason for this is it being equal to MNIST in terms of dimensionality, size and the used distance measure. The insignificant differences are likely due to chance at runtime.
 
 ### AnnoyED vs. Annoy
 
@@ -159,7 +159,7 @@ Fashion-MNIST on the other hand performs very similar MNIST. We account for this
 
 Our project uses the core ideas from Annoy [1, 2], so we were interested in how well the different implementations compare on MNIST. Both implementations achieve similar high recall values; with 15 trees annoyED achieves a recall of 0.97, however at the price of few _QPS_ of 14.6. Annoy on the other hand achieves an recall of 0.99 with 83.3 _QPS_. Another example: to get a recall of 0.79 annoyED has 30.2 _QPS_ while Annoy achieves 3940 _QPS_.
 
-To consider is the following: Annoy is a highly optimized library written in C++, it uses AVX [9] where possible to accelerate for loops using SIMD operations. Also, Annoy does not allow modifying built indices which allows further optimizations. Plus, Annoy is directly accessed through a C++/Python interface while annoyED uses Kafka topics which leads to networking overhead. 
+To consider is the following: Annoy is a highly optimized library written in C++, it uses AVX [9] where possible to accelerate for-loops using SIMD operations. Also, Annoy does not allow modifying built indices which allows further optimizations. Plus, Annoy is directly accessed through a C++/Python interface while annoyED uses Kafka topics which leads to networking overhead. 
 
 ## Discussion and Future Work
 
