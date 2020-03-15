@@ -19,32 +19,27 @@ Then:
 
 ### REST Service
 
-On startup, the application exposes three REST endpoints on `localhost:5000`. The relevant one, in the beginning, is `/params`. To configure the application you can make a POST request with the following body `<Number of Trees>;<Expected Dataset Size>;<Distance Metric ID>` onto this endpoint. The store allocates space for Expected Dataset Size datapoints; use 0 if this is unknown. 
-We currently support 2 distance metrics: Euclidean (ID: 0) and Angular (ID: 1). 
-An example body would be `10;0;0`. We would get 10 trees, no preallocated memory and the euclidean distance metric.
-
+On startup, the application exposes three REST endpoints on `localhost:5000`. The relevant one, in the beginning, is `/params`:
+- **`/params`:** To configure the application, make a POST request with the request body `<Number of Trees>;<Expected Dataset Size>;<Distance Metric ID>` to this endpoint. The store creates the trees and allocates the space accordingly (use 0 if size is unknown). We currently support 2 distance metrics: Euclidean (ID: 0) and Angular (ID: 1). An example body would be `10;0;0`. We would get 10 trees, no preallocated memory and the euclidean distance metric.
 Be aware that every POST request resets the whole storage. This means that all data that was loaded into the store will be discarded.
 
-The Kafka Streams application uses two topics: `source-topic` for input and `sink-topic` for output. We use the JSON format to write into and read from the topics. Messages to the `source-topic` should have the following format: 
+Our Kaflka Streams application uses two topics: `source-topic` for input and `sink-topic` for output. JSON serialized messages can be written and read by our app. Messages to the `source-topic` should have the following format: 
 ```js
-{
-    'datapointID': 0,
-    'vector':      [0.3,0.7,255,...],
+{   'datapointID': 0,
+    'vector':      [0.3, 0.7, 255, ...],
     'persist':     True,
     'write':       True,
-    'k':           10
- }
-
+    'k':           10                       }
 ```
 
-The `persist` and `write` flags are explained in the architecture section ([here](###Dataflow)). The application outputs JSON formatted strings to `sink-topic` with the following format:
+Use the flags `persist=True` to add a point to the index and `write=True` to retrieve its nearest neighbors and write them to the `sink-topic` as explained [here](#Dataflow). The application then outputs JSON serialized NearestNeighbors object to the `sink-topic` in the following format; list contains the `datapointID`s of the k nearest neighbors sorted by distance:
 ```js
-{
-    list: [1,5,4,3]
- }
+{  'list': [1, 5, 4, 3]   }
 ```
 
-The contents of list are the `datapointID`s of the k nearest neighbors sorted by distance (the first one is the closest).
+- **`/query`:** After having added some points to your index, start querying nearest neighbors for a new point by making a POST request with a JSON serialized Datapoint as request body (as described above) to this endpoint. The result will be a JSON serialized NearestNeighbors object with the ids of the k nearest neighbor points.
+
+- **`/trees`:** To inspect the built indices, send a GET request to this endpoint. The response will be a JSON serialized IndexTree. Be aware that the returned object can be very large. We only recommend using this endpoint for testing purposes with few data.
 
 ### Usage with ann-benchmarks
 
@@ -129,7 +124,7 @@ In the process of developing annoyED, we started with a straightforward implemen
 
 **Baseline:** Already with our baseline (_No Caching + Random_), where we select split candidates randomly and otherwise proceed as described in the previous section but leabing out the aforementioned query caching, we achieve a precision of up to 0.87 at 31 QPS with 5 index trees. As expected, with more trees our model can answer queries with higher recall, i.e. unfavorable partitions in one index tree are compensated by the other trees, but however at the cost of slower throughput due to the increased complexity.
 
-**2-Means Split Candidate Selection**: Randomly selecting the points between which the splitting hyperplane is constructed in a split can lead to unbalanced splits, e.g. if a selected point is an outlier. This will then lead to an unbalanced and unnecessarily deep tree structure in our index. To approach this problem, we added a k-means approximation with two centroids to create an optimally splitting hyperplane.
+**2-Means Split Candidate Selection**: Randomly selecting the points between which the splitting hyperplane is constructed in a split can lead to unbalanced splits, e.g. if a selected point is an outlier. This will then lead to an unbalanced and unnecessarily deep tree structure in our index. To approach this problem, we added a k-means approximation with two centroids to create an optimally splitting hyperplane (look [here](https://github.com/jonashering/annoyED/blob/master/src/main/java/annoyED/tree/IndexTree.java#L66) for how it works in detail).
 With this optimization, we achieve a higher precision of up to 0.92 while at the same time maintaining the throughput of 31 QPS with 5 trees. We observe an increased QPS for less trees as well. Splitting the points in a more balanced way and thus creating more quality index trees is therefore a meaningful addition.
 
 _However:_ When later running the experiments on the NYTimes dataset, we discovered that the 2-means algorithm might decrease the performance. Since the capacity of the index tree leaves depends on the dimensionality of points, low-dimensional datasets trigger splitting more often. The costly 2-means, as well as the large dataset size of NYTimes, makes the index building slower, we thus made it optional. 
@@ -138,7 +133,7 @@ _However:_ When later running the experiments on the NYTimes dataset, we discove
 
 **Parallelization of Distance Calculation:** We also experimented with parallelizing the distance calculation when retrieving points from the index. Our implementation collected the set of neighbor candidates from all index trees and then distributed the distance calculation to all available cores using the Java interface `list.parallelStream().map(_ -> _)`. This did, unfortunately, decrease the speed. However, our testing setup is a machine with 4 (virtual) cores, so on a better-powered machine this might change.
 
-### 10, 15, 25, 100 Nearest Neighbors
+### 10, 25, 50, 100 Nearest Neighbors
 
 ![](https://user-images.githubusercontent.com/23058484/76699565-e75a0300-66ae-11ea-8395-3a55405cf027.png) ![](https://user-images.githubusercontent.com/23058484/76699563-e1fcb880-66ae-11ea-9c2b-22872a67743c.png)
 
